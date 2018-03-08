@@ -12,10 +12,21 @@ def location_for(place, fake_version = nil)
   end
 end
 
-# unit tests: --without system_tests development
+# lint/unit tests
+# runs in travis with: bundle install --without system_tests development
 gem 'rake'
 gem "rototiller", *location_for(ENV['TILLER_VERSION'] || '~> 1.0')
 gem 'rspec'                  ,'~> 3.4.0'
+gem "rubocop",   "~> 0.49.1", require: false # used in tests. pinned
+gem "simplecov", "~> 0.14.0" # used in tests
+gem "yardstick", "~> 0.9.0"  # used in tests
+gem 'markdown'             ,'~> 0'
+gem "flay",      "~> 2.10.0" # used in tests
+gem "flog",      "~> 4.6.0"  # used in tests
+gem "roodi",     "~> 5.0.0"  # used in tests
+gem "rubycritic"
+# https://coveralls.io/github/puppetlabs/doctor_teeth
+gem "coveralls", require: false # used in tests
 
 group :system_tests do
   beaker_version     = '~> 3.0'
@@ -43,13 +54,6 @@ group :system_tests do
   gem 'nokogiri'             ,"#{nokogiri_version}"
   gem 'public_suffix'        ,"#{public_suffix_version}"
   gem 'activesupport'        ,"#{activesupport_version}"
-end
-
-group :development do
-  gem 'simplecov'
-  #Documentation dependencies
-  gem 'yard'                 ,'~> 0.9.11' # CVE-2017-17042
-  gem 'markdown'             ,'~> 0'
 end
 
 local_gemfile = "#{__FILE__}.local"

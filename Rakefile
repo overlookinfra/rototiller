@@ -1,19 +1,110 @@
 require 'fileutils'
 require 'rototiller'
+require "yard"
+require "rubocop/rake_task"
+require "flog_task"
+require "flay_task"
+require "roodi_task"
+require "rubycritic/rake_task"
+
+YARD_DIR = "doc".freeze
+DOCS_DIR = "docs".freeze
 
 PCR_URI = "pcr-internal.puppet.net/slv/rototiller:latest"
 LATEST_CONTAINER = "docker ps --latest --quiet"
 DEFAULT_RAKE_VER = "11.0"
 
 task :default do
-  sh %{rake -T}
+  sh %(rake -T)
 end
 
-# temporary backwards compat
-task :test => :'test:unit'
-task :acceptance => :'test:acceptance'
+namespace :gem do
+  require "bundler/gem_tasks"
+end
+
+task yard: :"docs:yard"
+
+# rubocop:disable Metrics/BlockLength
+namespace :docs do
+  # docs:yard task
+  YARD::Rake::YardocTask.new
+
+  desc "Clean/remove the generated YARD Documentation cache"
+  task :clean do
+    rakefile_path = File.expand_path(File.dirname(__FILE__))
+    FileUtils.rm_rf(File.join(rakefile_path,YARD_DIR))
+  end
+
+  desc "Tell me about YARD undocummented objects"
+  YARD::Rake::YardocTask.new(:undoc) do |t|
+    t.stats_options = ["--list-undoc"]
+  end
+
+  desc "Measure YARD coverage"
+  require "yardstick/rake/measurement"
+  Yardstick::Rake::Measurement.new(:measure) do |measurement|
+    measurement.output = "yardstick/report.txt"
+  end
+
+  desc "Verify YARD coverage"
+  require "yardstick/rake/verify"
+  config = {"require_exact_threshold" => false}
+  Yardstick::Rake::Verify.new(:verify, config) do |verify|
+    verify.threshold = 57 # FIXME
+  end
+
+  desc "Generate static project architecture graph. (Calls docs:yard)"
+  # this calls `yard graph` so we can"t use the yardoc tasks like above
+  #   We could create a YARD:CLI:Graph object.
+  #   But we still have to send the output to the graphviz processor, etc.
+  task arch: [:yard] do
+    # rake can be run from any dir under here
+    #   so we don't know where we are
+    #   yard graph needs access to the lib file tree, and you can't specify it
+    #   to yard.  so we need to chdir here.
+    original_dir = Dir.pwd
+    Dir.chdir(File.expand_path(File.dirname(__FILE__)))
+    graph_processor = "dot"
+    if exe_exists?(graph_processor)
+      FileUtils.mkdir_p(DOCS_DIR)
+      if system("yard graph --full | #{graph_processor} -Tpng " \
+          "-o #{DOCS_DIR}/arch_graph.png")
+        puts "we made you a class diagram: #{DOCS_DIR}/arch_graph.png"
+      end
+    else
+      STDERR.puts "ERROR: you don't have dot/graphviz, can't convert to png"
+      exit 1
+    end
+    Dir.chdir(original_dir)
+  end
+end
+
+namespace :lint do
+  RuboCop::RakeTask.new do |task|
+    task.options = ["--debug"]
+  end
+
+  allowed_complexity = 585 # <cough!>
+  FlogTask.new :flog, allowed_complexity, %w[lib]
+  allowed_repitition = 0
+  FlayTask.new :flay, allowed_repitition, %w[lib]
+  RoodiTask.new
+  RubyCritic::RakeTask.new do |task|
+    task.paths   = FileList['lib/**/*.rb']
+  end
+end
 
 namespace :test do
+  desc "check number of lines of code changed. To protect against long PRs"
+  task "diff_length" do
+    max_length = 150
+    target_branch = ENV["DISTELLI_RELBRANCH"] || "master"
+    diff_cmd = "git diff --numstat #{target_branch}"
+    sum_cmd  = "awk '{s+=$1} END {print s}'"
+    cmd      = "[ `#{diff_cmd} | #{sum_cmd}` -lt #{max_length} ]"
+    puts "checking if diff length is less than #{max_length} LoC"
+    exit system(cmd)
+  end
 
   desc "Run unit tests"
   rototiller_task :unit do |t|
@@ -36,13 +127,10 @@ namespace :test do
           end
         end
         command.add_argument({:name => '"'})
-
-        puts command.to_str
       end
       t.add_command({:name => "docker stop `#{LATEST_CONTAINER}` && docker rm `#{LATEST_CONTAINER}`"})
     else
       t.add_command do |command|
-        #command.name = "bundle exec rspec --color --format documentation"
         command.name = "bundle exec rspec --color --format documentation"
         command.add_option do |option|
           option.name = '--pattern'
@@ -52,11 +140,9 @@ namespace :test do
             arg.add_env({:name => 'SPEC_PATTERN'})
           end
         end
-        puts command.to_str
       end
     end
   end
-
 
   desc "Run acceptance tests in a docker container. Depends upon container:update_and_start"
   rototiller_task :acceptance => "container:update_and_start" do |t|
@@ -114,8 +200,6 @@ namespace :test do
         end
       end
       command.add_argument({:name => '"'})
-
-      puts command.to_str
     end
     t.add_command({:name => "docker stop `#{LATEST_CONTAINER}` && docker rm `#{LATEST_CONTAINER}`"})
 
@@ -124,7 +208,6 @@ namespace :test do
 end
 
 namespace :docs do
-  YARD_DIR = 'doc'
   desc 'Clean/remove the generated documentation cache'
   task :clean do
     original_dir = Dir.pwd

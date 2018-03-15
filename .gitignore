@@ -22,6 +22,7 @@ build/
 # But not this file...
 !/doc/rototiller_class_graph.png
 /yard_docs/
+/yardstick/
 
 ## Environment normalisation:
 /.bundle/

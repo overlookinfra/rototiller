@@ -138,7 +138,7 @@ module Rototiller
       describe '#message' do
         it 'returns the formatted message' do
           @formatted_message = 'killer message'
-          expect(switch.message).to eq(@formatted_message)
+          expect(switch.message).to eq(@formatted_message + "\n")
         end
       end
     end

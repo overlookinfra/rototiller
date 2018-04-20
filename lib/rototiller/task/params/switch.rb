@@ -21,6 +21,7 @@ module Rototiller
       def initialize(args={}, &block)
         # the env_vars that override the name
         @env_vars      = EnvCollection.new
+        @message ||= args[:parent_message]
         block_given? ? (yield self) : send_hash_keys_as_methods_to_self(args)
         @name ||= @env_vars.last
       end
@@ -41,7 +42,7 @@ module Rototiller
         #   but if this gets moved to a mixin, it might be more tolerable
         if block_given?
           # send in the name of this Param, so it can be used when no default is given to add_env
-          @env_vars.push(EnvVar.new({:parent_name => @name},&block))
+          @env_vars.push(EnvVar.new({:parent_name => @name, @parent_message => @message},&block))
         else
           #TODO: test this with array and non-array single hash
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
@@ -49,6 +50,7 @@ module Rototiller
             raise ArgumentError.new(error_string) unless arg.is_a?(Hash)
             # send in the name of this Param, so it can be used when no default is given to add_env
             arg[:parent_name] = @name
+            arg[:parent_message] = @message
             @env_vars.push(EnvVar.new(arg))
           end
         end
@@ -66,7 +68,9 @@ module Rototiller
       #   itself, env_vars
       # TODO make private method? so that it will throw an error if yielded to?
       def message
-        return [@message, @env_vars.messages].join ''
+        return_message = [@message, @env_vars.messages].join ''
+        return_message += "\n" unless return_message == ''
+        return return_message
       end
 
       # The string representation of this Switch; the value sent by author, or overridden by any env_vars

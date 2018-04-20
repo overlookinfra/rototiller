@@ -23,7 +23,7 @@ end
     EOS
 
     rakefile_path = create_rakefile_on(sut, rakefile_contents)
-    matcher = /pry.*quit.*first.*second/m
+    matcher = /".*\n.*first.*pry.*quit.*second/m
     if sut['platform'] =~ /osx/
       matcher = /first\n.*second/
     end

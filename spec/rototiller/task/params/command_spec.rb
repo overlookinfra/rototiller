@@ -63,7 +63,7 @@ module Rototiller
         end
         context 'with a block' do
           it 'runs the block' do
-            expect{ command.run { |result| puts "my exit_code: '#{result.exit_code}'" } }.to output("#{@arg_name}\nmy exit_code: '0'\n").to_stdout
+            expect{ command.run { |result| puts "my exit_code: '#{result.exit_code}'" } }.to output(/#{@arg_name}\nmy exit_code: '0'\n$/).to_stdout
           end
         end
       end
@@ -166,7 +166,7 @@ module Rototiller
       describe '#message' do
         it 'returns the formatted message' do
           @formatted_message = 'killer message'
-          expect(command.message).to eq(@formatted_message)
+          expect(command.message).to eq(@formatted_message + "\n")
         end
       end
     end

@@ -43,19 +43,21 @@ module Rototiller
         [@name.to_s, @arguments.to_s].compact.join(' ')
       end
 
+      # @return [String] formatted messages from all of Switch's pieces
+      #   itself, env_vars
+      # TODO make private method? so that it will throw an error if yielded to?
+      def message
+        return_message = [@message, @env_vars.messages, @arguments.messages].join ''
+        return_message += "\n" unless return_message == ''
+        return return_message
+      end
+
       # Does this param require the task to stop
       # Determined by the interactions between @name, @env_vars, @arguments
       # @return [true|nil] if this param requires a stop
       def stop
         return true if @arguments.stop?
         return true unless @name
-      end
-
-      # @return [String] formatted messages from all of Option's pieces
-      #   itself, env_vars, arguments
-      # TODO make private method? so that it will throw an error if yielded to?
-      def message
-        return [@message, @env_vars.messages, @arguments.messages].join('')
       end
 
     end

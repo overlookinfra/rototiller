@@ -35,16 +35,16 @@ module Rototiller
 
                 # validation
                 if (has_default == 'with_default' && env_set == 'ENV not set')
-                  @formatted_message = "\e[32mINFO: no system environment-variable value, using default provided: \e[0m'#{@var_name}': '#{@var_default}': '#{@var_message}'\n"
+                  @formatted_message = "\e[32mINFO: no system environment-variable value, using default provided: \e[0m'#{@var_name}': '#{@var_default}': '#{@var_message}'"
                   @expected_stop = false
                 elsif (has_default == 'without_default' && env_set == 'ENV not set')
-                  @formatted_message = "\e[31mERROR: environment-variable not set and no default provided: \e[0m'#{@var_name}': '#{@var_message}'\n"
+                  @formatted_message = "\e[31mERROR: environment-variable not set and no default provided: \e[0m'#{@var_name}': '#{@var_message}'"
                   @expected_stop = true
                 elsif (has_default == 'with_default' && env_set == 'ENV set')
-                  @formatted_message = "\e[33mINFO: environment-variable overridden from system, not using default: \e[0m'#{@var_name}': default: '#{@var_default}' using: '#{@var_env_value}': '#{@var_message}'\n"
+                  @formatted_message = "\e[33mINFO: environment-variable overridden from system, not using default: \e[0m'#{@var_name}': default: '#{@var_default}' using: '#{@var_env_value}': '#{@var_message}'"
                   @expected_stop = false
                 elsif (has_default == 'without_default' && env_set == 'ENV set')
-                  @formatted_message = "\e[33mINFO: using system environment-variable value, no default provided: \e[0m'#{@var_name}': '#{@var_env_value}': '#{@var_message}'\n"
+                  @formatted_message = "\e[33mINFO: using system environment-variable value, no default provided: \e[0m'#{@var_name}': '#{@var_env_value}': '#{@var_message}'"
                   @expected_stop = false
                 end
 
@@ -60,7 +60,7 @@ module Rototiller
 
               describe '.message' do
                 it 'returns the formatted message' do
-                  expect(@env_var.message).to eq(@formatted_message)
+                  expect(@env_var.message).to eq(@formatted_message + "\n")
                 end
               end
 

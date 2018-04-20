@@ -105,7 +105,7 @@ module Rototiller
         print_messages
         stop_task?
         @commands.each do |command|
-          puts command if @verbose
+          puts command
 
           begin
             command.run

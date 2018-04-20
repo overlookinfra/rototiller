@@ -96,7 +96,7 @@ module Rototiller::Task
           expect { described_run_task }.to output(/Bad news/).to_stderr
         end
 
-        it 'does not print it if the command run succeeded' do
+        it 'prints it if the command run succeeded' do
           task.add_command({:name =>  'echo'})
           expect { described_run_task }.not_to output(/Bad/).to_stderr
           expect { described_run_task }.not_to output(/Bad/).to_stdout

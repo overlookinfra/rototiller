@@ -192,6 +192,8 @@ namespace :container do
     t.add_command do |command|
       #command.name = "docker build ./ --file Dockerfile-tests --tag"
       # WARNING: this will delete any .bundle and Gemfile.lock
+      # we need to delete the local bundle stuff so that when the container build slurps them up the
+      #   Gemfile.lock doesn't corrupt the container bundle
       command.name = "rm -rf Gemfile.lock .bundle/ && docker build ./ --file Dockerfile-tests --tag"
       command.add_argument do |arg|
         arg.name = PCR_URI

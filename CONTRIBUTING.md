@@ -38,6 +38,24 @@
 * During the time that you are working on your patch the master Rototiller branch may have changed - you'll want to [rebase](http://git-scm.com/book/en/Git-Branching-Rebasing) before you submit your PR with `git rebase master`.  A successful rebase ensures that your patch will cleanly merge into Rototiller.
 * Submitted patches will be smoke tested through a series of acceptance level tests that ensures basic Rototiller functionality - the results of these tests will be evaluated by a Rototiller team member.  Failures associated with the submitted patch will result in the patch being rejected.
 
+## Testing
+
+* `bundle install`
+* run the unit tests
+  * this runs rspec on the local machine
+  * do not write tests that could mess with the local machine
+  * `bundle exec rake test:unit`
+* run the acceptance tests
+  * some of these could theoretically do weird stuff to the local system
+  * so we run these in a container
+  * a running docker server is required
+  * `docker login pcr-internal.puppet.net`
+  * `docker pull pcr-internal.puppet.net/slv/rototiller:latest`
+  * we'll  mirror the image to docker soon, probably, for your local testing, outside of Puppet.
+  * `bundle exec rake test:acceptance`
+
+  These tests all run in CI.  the unit tests are also run in the container to save time in the repeated bundle installs and rvm setup steps. You are welcome to use the container as well if you want to avoid the bundle install.  Just gem install rototiller (to make our own Rakefile _go_ and you can rake test:unit all day.
+
 ## Submitting Changes
 
 * Sign the [Contributor License Agreement](http://links.puppet.com/cla).

@@ -1,0 +1,46 @@
+FROM centos:centos6
+MAINTAINER Eric Thompson <erict@puppet.com>
+
+ENV project rototiller
+
+RUN yum -y update && yum -y install \
+  gcc \
+  gcc-c++ \
+  git \
+  make \
+  ruby \
+  ruby-devel \
+  zlib-devel \
+  openssh-server \
+  which \
+  && yum clean all
+
+# install RVM, Ruby, and Bundler
+RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys D39DC0E3
+RUN curl -L https://get.rvm.io | bash -s stable --ruby
+# install bundler without documentation
+# use bash -l to run as a login shell to get the rvm goodness
+RUN /bin/bash -l -c "gem install --no-rdoc --no-ri bundler"
+
+# setup ssh
+RUN mkdir -p /root/.ssh && \
+    chmod 0700 /root/.ssh
+COPY acceptance/lib/ssh/docker_acceptance* /root/.ssh/
+RUN chmod 600 /root/.ssh/docker_acceptance*
+RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
+RUN ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
+RUN echo 'PermitRootLogin yes'       >> /etc/ssh/sshd_config
+RUN echo 'PermitUserEnvironment yes' >> /etc/ssh/sshd_config
+RUN echo `cat /root/.ssh/docker_acceptance.pub` >> ~/.ssh/authorized_keys
+
+# setup project
+COPY . ${project}
+WORKDIR ${project}
+# install the bundle elsewhere, so we don't clobber the local host's
+ENV BUNDLE_PATH /vendor
+RUN /bin/bash -l -c "bundle install"
+# sigh, create neverending pid1
+# this way the container won't exit once we start it
+# we can later exec commands against it after copying files into it
+#  background processes do not acheive this (such as ssshd)
+ENTRYPOINT tail -f /dev/null

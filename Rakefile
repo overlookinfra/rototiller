@@ -29,10 +29,9 @@ namespace :test do
         command.add_option({:name => 'bundle exec rspec --color --format documentation'})
         command.add_option do |option|
           option.name = '--pattern'
-          option.message = 'rspec files to test pattern'
           option.add_argument do |arg|
             arg.name = "spec/**/*_spec.rb"
-            arg.add_env({:name => 'SPEC_PATTERN'})
+            arg.add_env({:name => 'SPEC_PATTERN', :message => "rspec files to test pattern"})
           end
         end
         command.add_argument({:name => '"'})
@@ -46,10 +45,9 @@ namespace :test do
         command.name = "bundle exec rspec --color --format documentation"
         command.add_option do |option|
           option.name = '--pattern'
-          option.message = 'rspec files to test pattern'
           option.add_argument do |arg|
             arg.name = "spec/**/*_spec.rb"
-            arg.add_env({:name => 'SPEC_PATTERN'})
+            arg.add_env({:name => 'SPEC_PATTERN', :message => "rspec files to test pattern"})
           end
         end
         puts command.to_str

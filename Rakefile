@@ -114,37 +114,15 @@ namespace :test do
 
   desc "Run unit tests"
   rototiller_task :unit do |t|
-    t.add_env({:name => 'CI', :default => 'false', :message => 'Are we in CI? If so, unit tests run in the container'})
     t.add_env({:name => 'RAKE_VER',     :default => DEFAULT_RAKE_VER,  :message => 'The rake version to use when running unit tests'})
-    if ENV['CI'] != 'false'
-      Rake::Task["container:update_and_start"].execute
-      t.add_command do |command|
-        command.name = "docker exec --interactive `#{LATEST_CONTAINER}`"
-        # use options here so they come out in order (arguments would go on the end after all options
-        command.add_option({:name => '/bin/bash -l -c "'})
-        command.add_option({:name => 'bundle update &&'})
-        command.add_option({:name => 'bundle exec rspec --color --format documentation'})
-        command.add_option do |option|
-          option.name = '--pattern'
-          option.message = 'rspec files to test pattern'
-          option.add_argument do |arg|
-            arg.name = "spec/**/*_spec.rb"
-            arg.add_env({:name => 'SPEC_PATTERN'})
-          end
-        end
-        command.add_argument({:name => '"'})
-      end
-      t.add_command({:name => "docker stop `#{LATEST_CONTAINER}` && docker rm `#{LATEST_CONTAINER}`"})
-    else
-      t.add_command do |command|
-        command.name = "bundle exec rspec --color --format documentation"
-        command.add_option do |option|
-          option.name = '--pattern'
-          option.message = 'rspec files to test pattern'
-          option.add_argument do |arg|
-            arg.name = "spec/**/*_spec.rb"
-            arg.add_env({:name => 'SPEC_PATTERN'})
-          end
+    t.add_command do |command|
+      command.name = "bundle exec rspec --color --format documentation"
+      command.add_option do |option|
+        option.name = '--pattern'
+        option.message = 'rspec files to test pattern'
+        option.add_argument do |arg|
+          arg.name = "spec/**/*_spec.rb"
+          arg.add_env({:name => 'SPEC_PATTERN'})
         end
       end
     end
@@ -162,8 +140,8 @@ namespace :test do
       # use options here so they come out in order (arguments would go on the end after all options
       command.add_option({:name => '/bin/bash -l -c "'})
       # start sshd for beaker
-      #   we have to specify group to bundle update or it fails, sometimes??
-      command.add_option({:name => '/usr/sbin/sshd && bundle update &&'})
+      # remove Gemfile.lock so the host's bundle (different ruby version) doesn't pollute this one
+      command.add_option({:name => '/usr/sbin/sshd && rm Gemfile.lock; bundle install --with system_tests &&'})
       command.add_option({:name => 'bundle exec beaker --debug --no-ntp --repo-proxy --no-validate --no-provision'})
       command.add_option do |option|
         option.name = '--keyfile'
@@ -279,11 +257,7 @@ namespace :container do
   desc "(re)build docker container for tests"
   rototiller_task :build do |t|
     t.add_command do |command|
-      #command.name = "docker build ./ --file Dockerfile-tests --tag"
-      # WARNING: this will delete any .bundle and Gemfile.lock
-      # we need to delete the local bundle stuff so that when the container build slurps them up the
-      #   Gemfile.lock doesn't corrupt the container bundle
-      command.name = "rm -rf Gemfile.lock .bundle/ && docker build ./ --file Dockerfile-tests --tag"
+      command.name = "docker build ./ --file Dockerfile-tests --tag"
       command.add_argument do |arg|
         arg.name = PCR_URI
         arg.message = 'the name of the docker image, including registry/repo'

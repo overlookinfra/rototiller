@@ -5,7 +5,6 @@ require "rubocop/rake_task"
 require "flog_task"
 require "flay_task"
 require "roodi_task"
-require "rubycritic/rake_task"
 
 YARD_DIR = "doc".freeze
 DOCS_DIR = "docs".freeze
@@ -89,8 +88,15 @@ namespace :lint do
   allowed_repitition = 0
   FlayTask.new :flay, allowed_repitition, %w[lib]
   RoodiTask.new
-  RubyCritic::RakeTask.new do |task|
-    task.paths   = FileList['lib/**/*.rb']
+  begin
+    require "rubycritic/rake_task"
+    RubyCritic::RakeTask.new do |task|
+      task.paths   = FileList['lib/**/*.rb']
+    end
+  rescue LoadError
+    task :doothingnogood do
+      puts "[W] older versions of rubycritic did not ship rake tasks. It is also extremely buggy, use with care"
+    end
   end
 end
 

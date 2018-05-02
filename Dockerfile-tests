@@ -38,7 +38,8 @@ COPY . ${project}
 WORKDIR ${project}
 # install the bundle elsewhere, so we don't clobber the local host's
 ENV BUNDLE_PATH /vendor
-RUN /bin/bash -l -c "bundle install"
+RUN rm Gemfile.lock
+RUN /bin/bash -l -c "bundle install --with system_tests"
 # sigh, create neverending pid1
 # this way the container won't exit once we start it
 # we can later exec commands against it after copying files into it

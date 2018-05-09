@@ -6,13 +6,34 @@ slv/rototiller:
     - docker login -u TOKEN --password $PCR_TOKEN pcr-internal.puppet.net
     - echo "pulling container image"
     - docker pull pcr-internal.puppet.net/slv/rototiller:latest
-    - echo "gem install rototiller"
-    - gem install rototiller
+    # Check to see if rvm is already installed
+    - if [ -a ~/.rvm/scripts/rvm ]; then
+    -   echo "rvm exists"
+    -   rvm install 2.4.1
+    - else
+    -   echo "rvm does not exist. Installing..."
+    -   gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+    -   curl -sSL https://get.rvm.io | bash -s -- --version 2.4.1
+    - fi
+    - source ~/.rvm/scripts/rvm
+    - rvm use 2.4.1
+    - gem install bundler
+    - bundle install --without system_tests
 
   Build:
+    - source ~/.rvm/scripts/rvm
+    - rvm use 2.4.1
     # something in here (docker probably) is reading from stdin
     #   this prevents subsequent steps from running (acceptance doesn't run)
     #   so we need the </dev/null :facepalm:
+    - echo "rake docs:verify" </dev/null
+    - bundle exec rake docs:verify
+    - echo "rake lint:flay" </dev/null
+    - bundle exec rake lint:flay
+    #- echo "rake lint:flog" </dev/null
+    #- bundle exec rake lint:flog
+    #- echo "rake lint:rubocop" </dev/null
+    #- bundle exec rake lint:rubocop
     - echo "rake test:unit" </dev/null
     - rake test:unit </dev/null
     - echo "rake test:acceptance" </dev/null

@@ -55,6 +55,12 @@ module Rototiller::Task
           expect(task_named.name).to eq :task_name
         end
 
+        # FIXME: damnit, where is this extra newline coming from?
+        #   i'm pretty sure it's the way we're printing (with puts) empty messages from Command or EnvVar
+        #it "doesn't have spurious newlines" do
+          #expect{ described_run_task }.not_to output(anything).to_stdout
+        #end
+
         it "creates a default description with '#{init_method}'" do
           expect(task_named).to receive(:run_task) { true } unless init_method == :define_task
           # FIXME: WHY does define_task not appear to work here (works in acceptance)
@@ -208,7 +214,7 @@ module Rototiller::Task
                        {:name => 'VAR3',:message => env_desc},{:name => env_name,:message => env_desc})
           expect(task).to receive(:exit)
           expect{ described_run_task }
-            .to output(/ERROR: environment-variable not set and no default provided:.*#{env_name}.*#{env_desc}.*VAR2.*VAR3.*/m)
+            .to output(/\[E\] required: .*#{env_name}.*#{env_desc}.*VAR2.*VAR3.*/m)
             .to_stdout
         end
       end

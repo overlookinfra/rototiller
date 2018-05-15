@@ -89,9 +89,14 @@ module Rototiller
       private
 
       # @private
-      def print_messages
-        puts @commands.messages
-        puts @env_vars.messages
+      def print_messages(stream=:STDOUT)
+        if stream==:STDERR
+          $stderr.puts @env_vars.messages
+          $stderr.puts @commands.messages
+        else
+          puts @env_vars.messages
+          puts @commands.messages
+        end
       end
 
       # @private
@@ -115,8 +120,7 @@ module Rototiller
 
           if command_failed
             $stderr.puts "'#{command}' failed" if @verbose
-            $stderr.puts command.message
-            $stderr.puts @env_vars.messages
+            print_messages(:STDERR)
             exit command.result.exit_code if fail_on_error
           end
         end

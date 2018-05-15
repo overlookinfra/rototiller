@@ -47,9 +47,8 @@ module Rototiller
       #   itself, env_vars
       # TODO make private method? so that it will throw an error if yielded to?
       def message
-        return_message = [@message, @env_vars.messages, @arguments.messages].join ''
+        return_message = [@env_vars.messages, @message, @arguments.messages].join ''
         return_message += "\n" unless return_message == ''
-        return return_message
       end
 
       # Does this param require the task to stop

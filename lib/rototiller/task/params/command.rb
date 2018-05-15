@@ -215,8 +215,11 @@ module Rototiller
       #   itself, env_vars, switches, options, arguments
       # TODO make private method? so that it will throw an error if yielded to?
       def message
-        return_message = @message
-        return_message += "\n" if @message && @message != ''
+        return_message = ''
+        if @message && @message != ''
+          return_message = "#{@name}; #{@message}"
+          return_message += "\n" #FIXME check for previous newline?
+        end
         return [return_message,
                 @env_vars.messages,
                 @switches.messages,

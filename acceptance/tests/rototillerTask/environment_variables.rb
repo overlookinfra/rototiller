@@ -37,8 +37,8 @@ end
       env_vars.each do |env|
         # validate notification to user of ENV value
         rototiller_message_match = env[:exists] ?
-          /INFO:.*'#{env[:name]}'.*present value.*#{env[:message]}/ :
-          /INFO:.*'#{env[:name]}'.*#{env[:message]}/
+          /\[I\].*'#{env[:name]}'.*present value.*#{env[:message]}/ :
+          /\[I\].*'#{env[:name]}'.*#{env[:message]}/
           assert_match(rototiller_message_match, result.stdout,
                        "The expected messaging was not observed for: '#{env[:name]}")
 
@@ -75,7 +75,7 @@ end
 
         env_vars_fail.each do |env|
           # validate notification to user of ENV value
-          rototiller_message_match = /ERROR:.*'#{env[:name]}'.*#{env[:message]}/
+          rototiller_message_match = /\[E\].*'#{env[:name]}'.*#{env[:message]}/
             assert_match(rototiller_message_match, result.stdout,
                          "The expected messaging was not observed for: '#{env[:name]}")
         end

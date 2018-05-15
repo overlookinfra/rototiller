@@ -67,7 +67,7 @@ test_name 'C98981: params can set and display messages' do
 
     tasks.each do |task|
       execute_task_on(sut, task, rakefile_path, {:verbose => true}) do |result|
-        assert_match(/^#{task}/, result.stdout, "The correct switch was not observed (#{task})")
+        assert_match(/#{task}/, result.stdout, "The correct switch was not observed (#{task})")
       end
     end
   end

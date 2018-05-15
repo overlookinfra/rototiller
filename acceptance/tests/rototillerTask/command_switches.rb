@@ -115,7 +115,7 @@ test_name 'C97821: can set switches (boolean options) for commands in a Rototill
     #FIXME: this one can't check for the second switch with the assertions below
     validation_string  = random_string
     validation_string2 = random_string
-    task_name    = validation_string
+    task_name          = validation_string
 
     rakefile_contents << <<-EOS
       rototiller_task :#{task_name} do |t|

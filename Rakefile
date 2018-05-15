@@ -19,7 +19,7 @@ namespace :test do
   rototiller_task :unit do |t|
     t.add_env({:name => 'CI', :default => 'false', :message => 'Are we in CI? If so, unit tests run in the container'})
     t.add_env({:name => 'RAKE_VER',     :default => DEFAULT_RAKE_VER,  :message => 'The rake version to use when running unit tests'})
-    if ENV['CI'] != 'false'
+    if ENV['CI'] && ENV['CI'] != 'false'
       Rake::Task["container:update_and_start"].execute
       t.add_command do |command|
         command.name = "docker exec --interactive `#{LATEST_CONTAINER}`"
@@ -35,8 +35,6 @@ namespace :test do
           end
         end
         command.add_argument({:name => '"'})
-
-        puts command.to_str
       end
       t.add_command({:name => "docker stop `#{LATEST_CONTAINER}` && docker rm `#{LATEST_CONTAINER}`"})
     else
@@ -50,7 +48,6 @@ namespace :test do
             arg.add_env({:name => 'SPEC_PATTERN', :message => "rspec files to test pattern"})
           end
         end
-        puts command.to_str
       end
     end
   end

@@ -186,10 +186,10 @@ namespace :container do
   rototiller_task :build do |t|
     t.add_command do |command|
       #command.name = "docker build ./ --file Dockerfile-tests --tag"
-      # WARNING: this will delete any .bundle and Gemfile.lock
+      # WARNING: this will delete any Gemfile.lock in the CWD
       # we need to delete the local bundle stuff so that when the container build slurps them up the
       #   Gemfile.lock doesn't corrupt the container bundle
-      command.name = "rm -rf Gemfile.lock .bundle/ && docker build ./ --file Dockerfile-tests --tag"
+      command.name = "rm -rf Gemfile.lock && docker build ./ --file Dockerfile-tests --tag"
       command.add_argument do |arg|
         arg.name = PCR_URI
         arg.message = 'the name of the docker image, including registry/repo'

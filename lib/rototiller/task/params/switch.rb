@@ -10,6 +10,10 @@ module Rototiller
     # @attr [String] name The name of the switch to add to a command string
     class Switch < RototillerParam
 
+      # @return [String] the command to be used, could be considered a default
+      # FIXME: this really needs a test, or to not have accessors
+      attr_accessor :name
+
       # Creates a new instance of Switch
       # @param [Hash,Array<Hash>] args hashes of information about the switch
       # for block { |b| ... }

@@ -24,7 +24,7 @@
         t.add_command do |c|
           c.name = 'echo my_sweet_command ${HOME}'
           c.add_env({:name => 'COMMAND_NAME', :message => 'use me to override this command name (`echo my_sweet_command ${HOME}; i default to the name of the command to which i was added`)'})
-          c.add_switch({:name => '--switch', :message => 'echo uses --switch to switch things'})
+          c.add_switch({:name => '--switch'})
           # FYI, add_switch can also take a block and/or add_env
           # command blocks also have add_option, and add_arg, each of which can add environment variables which override themselves.
           # add_option actually has its own add_arg and each of those have add_env.  so meta
@@ -53,7 +53,7 @@
       end
 
     desc 'override command-name with environment variable. This is for the reference file.'
-    rototiller_task :child => :parent_task do |task|
+    rototiller_task :child do |task|
       task.add_command({:name => 'nonesuch', :add_env => {:name => 'COMMAND_EXE1'}})
       # block syntax here. We give up some lines for more readability
       task.add_command do |cmd|
@@ -72,21 +72,17 @@
         cmd.add_switch do |s|
           s.name = '--switch'
           s.add_env({:name => 'CRASH_OVERRIDE', :message => 'this env overrides `switch`'})
-          s.message = 'switch: a binary (on or off) switch'
         end
         cmd.add_argument do |a|
           a.name = 'arguments go last'
           a.add_env({:name => 'ARG_OVERRIDE', :message => 'this env overrides `arguments go last`'})
-          a.message = 'argument `arguments go last`: an argument for the command (echo)'
         end
         cmd.add_option do |o|
           o.name = '--option'
           o.add_env({:name => 'OPT_OVERRIDE', :message => 'this env overrides --option'})
-          o.message = 'an option: options are like switches, but can take arguments'
           o.add_argument do |arg|
             arg.name = 'argument'
             arg.add_env({:name => 'OPT_ARG_OVERRIDE', :message => 'message at the env for option argument'})
-            arg.message = 'This is the message at the option argument level'
           end
         end
       end

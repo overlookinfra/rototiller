@@ -45,9 +45,8 @@ module Rototiller
 
       # @return [String] formatted messages from all of Switch's pieces
       #   itself, env_vars
-      # TODO make private method? so that it will throw an error if yielded to?
-      def message
-        return_message = [@env_vars.messages, @message, @arguments.messages].join ''
+      def message(indent=0)
+        return_message = [@env_vars.messages(indent), @arguments.messages(indent)].join ''
         return_message += "\n" unless return_message == ''
       end
 

@@ -44,21 +44,25 @@ module Rototiller
       end
 
       # The formatted messages about this EnvVar's status to be displayed to the user
+      # @param indent [String] how far to indent each message
       # @return [String] the EnvVar's message, formatted for color and meaningful to the state of the EnvVar
-      def message
+      INDENT_ARRAY = ["","  ","    ","      ","        ","          "]
+      def message(indent=0)
+        # we only need up to indent 4, really
+        indent = 1 if indent > 1
         this_message = String.new
 
         if env_status    == STATUS[:nodefault_noexist]
-          this_message << red_text('[E] required: ')
+          this_message << INDENT_ARRAY[ indent ] + red_text('[E] required: ')
           this_message << "'#{@name}'; '#{@message}'\n"
         elsif env_status == STATUS[:nodefault_exist]
-          this_message << yellow_text('[I] ')
+          this_message << INDENT_ARRAY[ indent ] + yellow_text('[I] ')
           this_message << "'#{@name}': using system: '#{@value}', no default; '#{@message}'\n"
         elsif env_status == STATUS[:default_noexist]
-          this_message << green_text('[I] ')
+          this_message << INDENT_ARRAY[ indent ] + green_text('[I] ')
           this_message << "'#{@name}': using default: '#{@value}'; '#{@message}'\n"
         elsif env_status == STATUS[:default_exist]
-          this_message << yellow_text('[I] ')
+          this_message << INDENT_ARRAY[ indent ] + yellow_text('[I] ')
           this_message << "'#{@name}': using system: '#{@value}', default: '#{@default}'; '#{@message}'\n"
         end
 

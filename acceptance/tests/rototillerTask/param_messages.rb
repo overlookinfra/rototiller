@@ -22,46 +22,6 @@ test_name 'C98981: params can set and display messages' do
     tasks << task_name
   end
 
-  step 'switch message' do
-    task_name = 'switch_with_message'
-    rakefile_contents << <<-EOS
-      rototiller_task :#{task_name} do |t|
-          t.add_command({:name => 'echo', :add_switch => {:name => '--switch', :message => '#{task_name}'}})
-      end
-    EOS
-    tasks << task_name
-  end
-
-  step 'argument message' do
-    task_name = 'argument_message'
-    rakefile_contents << <<-EOS
-      rototiller_task :#{task_name} do |t|
-          t.add_command({:name => 'echo', :add_argument => {:name => 'arg1', :message => '#{task_name}'}})
-      end
-    EOS
-    tasks << task_name
-  end
-
-  step 'option message' do
-    task_name = 'option_message'
-    rakefile_contents << <<-EOS
-      rototiller_task :#{task_name} do |t|
-          t.add_command({:name => 'echo', :add_option => {:name => '--option', :message => '#{task_name}'}})
-      end
-    EOS
-    tasks << task_name
-  end
-
-  step 'option_argument_message' do
-    task_name = 'option_argument2_message'
-    rakefile_contents << <<-EOS
-      rototiller_task :#{task_name} do |t|
-          t.add_command({:name => 'echo', :add_option => {:name => '--option', :add_argument => {:name => 'optionarg', :message => '#{task_name}'}}})
-      end
-    EOS
-    tasks << task_name
-  end
-
   step 'create Rakefile, execute tasks' do
     rakefile_path = create_rakefile_on(sut, rakefile_contents)
 

@@ -68,14 +68,14 @@
 # Additional Resources
 
 * [Rototiller's Yard Docs](http://www.rubydoc.info/github/puppetlabs/rototiller) (API/internal Architecture docs)
-* [Rototiller's Architecture](docs/rototiller_class_graph.png)
+* [Rototiller's Architecture](docs/arch_graph.png)
 * [More information on contributing](http://links.puppet.com/contribute-to-puppet)
 * [Contributor License Agreement](http://links.puppet.com/cla)
 * [General GitHub documentation](http://help.github.com/)
 * [GitHub pull request documentation](http://help.github.com/send-pull-requests/)
 * Questions?  Comments?  Contact the Rototiller team at qa-team@puppet.com
   * The keyword `rototiller` is monitored and we'll get back to you as quick as we can.
-* Rototiller's Architecture: [Rototiller's Architecture](docs/rototiller_class_graph.png)
+* Rototiller's Architecture: [Rototiller's Architecture](docs/arch_graph.png)
 
 ## Submitting Changes
 

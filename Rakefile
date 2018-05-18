@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'rototiller'
+require "./gem_of/lib/gem_of/rake_tasks"
 
 PCR_URI = "pcr-internal.puppet.net/slv/rototiller:latest"
 LATEST_CONTAINER = "docker ps --latest --quiet"
@@ -8,6 +9,11 @@ DEFAULT_RAKE_VER = "11.0"
 task :default do
   sh %{rake -T}
 end
+
+GemOf::GemTasks.new
+GemOf::YardStickTasks.new
+GemOf::DocsTasks.new
+GemOf::LintTasks.new
 
 # temporary backwards compat
 task :test => :'test:unit'
@@ -118,69 +124,6 @@ namespace :test do
 
 end
 
-namespace :docs do
-  YARD_DIR = 'doc'
-  desc 'Clean/remove the generated documentation cache'
-  task :clean do
-    original_dir = Dir.pwd
-    Dir.chdir( File.expand_path(File.dirname(__FILE__)) )
-    sh "rm -rf #{YARD_DIR}"
-    Dir.chdir( original_dir )
-  end
-
-  desc 'Generate static documentation'
-  #FIXME: this is probably a build task, given that it has output files
-  task :gen do
-    original_dir = Dir.pwd
-    Dir.chdir( File.expand_path(File.dirname(__FILE__)) )
-    output = `yard doc`
-    puts output
-    if output =~ /\[warn\]|\[error\]/
-      begin # prevent pointless stack on purposeful fail
-        fail "Errors/Warnings during yard documentation generation"
-      rescue Exception => e
-        puts 'Yardoc generation failed: ' + e.message
-        exit 1
-      end
-    end
-    Dir.chdir( original_dir )
-  end
-
-  desc 'Check amount of documentation'
-  task :check do
-    original_dir = Dir.pwd
-    Dir.chdir( File.expand_path(File.dirname(__FILE__)) )
-    output = `yard stats --list-undoc`
-    puts output
-    if output =~ /\[warn\]|\[error\]/
-      begin # prevent pointless stack on purposeful fail
-        fail "Errors/Warnings during yard documentation generation"
-      rescue Exception => e
-        puts 'Yardoc generation failed: ' + e.message
-        exit 1
-      end
-    end
-    Dir.chdir( original_dir )
-  end
-
-  desc 'Generate static class/module/method graph. Calls docs:gen'
-  task :class_graph => [:gen] do
-    DOCS_DIR = 'docs'
-    original_dir = Dir.pwd
-    Dir.chdir( File.expand_path(File.dirname(__FILE__)) )
-    graph_processor = 'dot'
-    if exe_exists?(graph_processor)
-      FileUtils.mkdir_p(DOCS_DIR)
-      if system("yard graph --full | #{graph_processor} -Tpng -o #{DOCS_DIR}/rototiller_class_graph.png")
-        puts "we made you a class diagram: #{DOCS_DIR}/rototiller_class_graph.png"
-      end
-    else
-      puts 'ERROR: you don\'t have dot/graphviz; punting'
-    end
-    Dir.chdir( original_dir )
-  end
-end
-
 namespace :container do
   desc "(re)build docker container for tests"
   rototiller_task :build do |t|
@@ -222,16 +165,4 @@ namespace :container do
       end
     end
   end
-end
-
-# Cross-platform exe_exists?
-def exe_exists?(name)
-  exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
-  ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
-    exts.each { |ext|
-      exe = File.join(path, "#{name}#{ext}")
-      return true if File.executable?(exe) && !File.directory?(exe)
-    }
-  end
-  return false
 end

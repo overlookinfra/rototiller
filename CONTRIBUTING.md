@@ -7,6 +7,7 @@
 
 ## Making Changes
 
+* (!) ensure you have gem_of installed in your gems. Bundler can not install it, and our Gemfile requires it.
 * Create a topic branch from where you want to base your work.
   * This is the `master` branch in the case of rototiller
   * To quickly create a topic branch based on master use `git checkout -b my_contribution master`. Do not work directly on the `master` branch.
@@ -40,6 +41,7 @@
 
 ## Testing
 
+* (!) ensure you have gem_of installed in your gems. Bundler can not install it, and our Gemfile requires it.
 * `bundle install`
 * run the unit tests
   * this runs rspec on the local machine

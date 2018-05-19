@@ -17,6 +17,9 @@ module Rototiller
 
       # create a task object with rototiller helper methods for building commands and creating debug/log messaging
       # see the rake-task documentation on things other than {.add_command} and {.add_env}
+      # @param *args [Array<String>] same args as a rake task: a name, other dependent tasks
+      # @yield block describing the RototillerTask including calls to our methods
+      # @return [RakeTask] the rake task with added rototiller goodnestus
       def initialize(*args, &task_block)
         @name          = args.shift
         @fail_on_error = true
@@ -31,6 +34,8 @@ module Rototiller
 
       # define_task is included to allow task to work like Rake::Task
       # using .define_task or .new as appropriate
+      # sort of private. it's needed by Rake. it should work fine, just not the *good* way to create a RototillerTask
+      # @api private
       def self.define_task(*args, &task_block)
         self.new(*args, &task_block)
       end
@@ -43,6 +48,8 @@ module Rototiller
       #
       # for block {|a| ... }
       # @yield [a] Optional block syntax allows you to specify information about the environment variable, available methods match hash keys
+      # @api public
+      # @example task.add_env({:name => "SOMENV"})
       def add_env(*args, &block)
         raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
         # this is kinda annoying we have to do this for all params? (not DRY)
@@ -67,6 +74,8 @@ module Rototiller
       #
       # for block {|a| ... }
       # @yield [a] Optional block syntax allows you to specify information about command, available methods match hash keys
+      # @api public
+      # @example task.add_command({:name => "echo i echo stuff"})
       def add_command(*args, &block)
         raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
         if block_given?
@@ -88,7 +97,13 @@ module Rototiller
 
       private
 
-      # @private
+      # @api private
+      def print_messages
+        puts @commands.messages
+        puts @env_vars.messages
+      end
+
+      # @api private
       def stop_task?
         if @env_vars.stop? || @commands.stop?
           $stderr.puts @commands.messages
@@ -97,7 +112,7 @@ module Rototiller
         end
       end
 
-      # @private
+      # @api private
       def run_task
         puts @env_vars.messages
         stop_task?
@@ -124,10 +139,10 @@ module Rototiller
         return @commands.map{ |command| command.result }
       end
 
-      # @private
       # register the new block w/ run_task call in a rake task
       #   any block passed is run prior to our command
       # TODO: probably need pre/post-command block functionality
+      # @api private
       def define(args, &task_block)
         # Default task description
         # can be overridden with standard 'desc' DSL method
@@ -141,8 +156,8 @@ module Rototiller
         end
       end
 
-      # @private
       #   for unit testing, we need a shortcut around rake's CLI --verbose
+      # @api private
       def set_verbose(verbosity=true)
         @verbose = verbosity
       end

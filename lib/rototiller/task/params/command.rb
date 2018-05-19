@@ -9,22 +9,28 @@ module Rototiller
     # The Command class to implement rototiller command handling
     #   via a RototillerTask's #add_command
     # @since v0.1.0
+    # @api public
+    # @example task.add_command({:name => "mycommand"})
     # @attr [String] name The name of the command to run
     # @attr_reader [Struct] result A structured command result
     #    contains members: output, exit_code and pid
     class Command < RototillerParam
 
+      # this command's name (as specified by user)
       # @return [String] the command to be used, could be considered a default
       attr_accessor :name
 
+      # this command's result
       # @return [Struct] the command results, if run
       attr_reader :result
 
       # Creates a new instance of Command, holds information about desired state of a command
       # @param [Hash,Array<Hash>] args hashes of information about the command
       # for block { |b| ... }
+      # @api public
+      # @example task.add_command({:name => "mycommand"})
       # @yield Command object with attributes matching method calls supported by Command
-      # @return Command object
+      # @return [Command] object
       def initialize(args={}, &block)
         # the env_vars that override the command name
         @env_vars      = EnvCollection.new
@@ -44,9 +50,12 @@ module Rototiller
       # @option args [String] :default The default value for the environment variable
       #                                  this is optional and defaults to the parent's `:name`
       # @option args [String] :message A message describing the use of this variable
+      # @api public
+      # @example command.add_env({:name => "MYENV"})
       #
       # for block {|a| ... }
       # @yield [a] Optional block syntax allows you to specify information about the environment variable, available methods match hash keys described above
+      # @return [Env] object
       def add_env(*args, &block)
         raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
         # this is kinda annoying we have to do this for all params? (not DRY)
@@ -73,8 +82,11 @@ module Rototiller
       # @option args [String] :name The switch string, including any '-', '--', etc
       # @option args [String] :message A message describing the use of this variable
       #
+      # @api public
+      # @example command.add_switch({:name => "--myswitch"})
       # for block {|a| ... }
       # @yield [a] Optional block syntax allows you to specify information about the environment variable, available methods match hash keys described above
+      # @return [Switch] object
       def add_switch(*args, &block)
         raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
         # this is kinda annoying we have to do this for all params? (not DRY)
@@ -98,8 +110,11 @@ module Rototiller
       # @option args [String] :name The value to be used as the option
       # @option args [String] :message A message describing the use of option
       #
+      # @api public
+      # @example command.add_option({:name => "--myoption"})
       # for block {|a| ... }
       # @yield [a] Optional block syntax allows you to specify information about the option, available methods match hash keys
+      # @return [Option] object
       def add_option(*args, &block)
         raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
         # this is kinda annoying we have to do this for all params? (not DRY)
@@ -123,8 +138,11 @@ module Rototiller
       # @option args [String] :name The value to be used as the argument
       # @option args [String] :message A message describing the use of argument
       #
+      # @api public
+      # @example command.add_argument({:name => "myargument"})
       # for block {|a| ... }
       # @yield [a] Optional block syntax allows you to specify information about the option, available methods match hash keys
+      # @return [Argument] object
       def add_argument(*args, &block)
         raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
         if block_given?
@@ -140,7 +158,10 @@ module Rototiller
 
       # convert a Command object to a string (runable command string)
       # @return [String] the current value of the command string as built from its params
+      # @api public
+      # @example puts command
       # TODO make private method? so that it will throw an error if yielded to?
+      # @return [String] string represenation of this entire command string
       def to_str
         delete_nil_empty_false([
           (name if name),
@@ -154,6 +175,8 @@ module Rototiller
       Result = Struct.new(:output, :exit_code, :pid)
       # run Command locally, capture relevent result data
       # @return [Struct<Result>] a Result Struct with stdout, stderr, exit_code members
+      # @api public
+      # @example command.run
       # TODO make private method? so that it will throw an error if yielded to?
       def run
         # make this look a bit like beaker's result class
@@ -205,6 +228,8 @@ module Rototiller
       # Does this param require the task to stop
       # Determined by the interactions between @name, @env_vars, @options, @switches, @arguments
       # @return [true|nil] if this param requires a stop
+      # @api public
+      # @example command.stop
       # TODO make private method? so that it will throw an error if yielded to?
       def stop
         return true if [@switches, @options, @arguments].any?{ |collection| collection.stop? }
@@ -213,6 +238,9 @@ module Rototiller
 
       # @return [String] formatted messages from all of Command's pieces
       #   itself, env_vars, switches, options, arguments
+      # @api public
+      # @example puts command.message
+      # TODO make private method? so that it will throw an error if yielded to?
       def message(indent=0)
         return_message = ''
         if @message && @message != ''
@@ -228,7 +256,8 @@ module Rototiller
       end
 
       private
-      # @private
+
+      # @api private
       def delete_nil_empty_false(arg)
         arg.delete_if{ |i| ([nil, '', false].include?(i)) }
       end

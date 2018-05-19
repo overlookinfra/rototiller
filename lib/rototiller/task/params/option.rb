@@ -9,8 +9,10 @@ module Rototiller
     #   contains information about a Switch's state, as influenced by environment variables, for instance
     # @since v1.0.0
     # @attr [String] name The name of the option to add to a command string
+    # @api public
     class Option < Switch
 
+      # @api public
       def initialize(args={}, &block)
         @arguments = ArgumentCollection.new
         super(args, &block)
@@ -24,6 +26,7 @@ module Rototiller
       #
       # for block {|a| ... }
       # @yield [a] Optional block syntax allows you to specify information about the argument, available methods match hash keys
+      # @api public
       def add_argument(*args, &block)
         raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
         if block_given?
@@ -37,14 +40,17 @@ module Rototiller
         end
       end
 
+      # The string representation of this EnvVar; the value on the system, or nil
       # @return [String] current value of this Option and its argument, based upon itself, defaults and environment variables
       #   used to form the complete, runable command string
+      # @api public
       def to_str
         [@name.to_s, @arguments.to_s].compact.join(' ')
       end
 
       # @return [String] formatted messages from all of Switch's pieces
       #   itself, env_vars
+      # @api public
       def message(indent=0)
         return_message = [@env_vars.messages(indent), @arguments.messages(indent)].join ''
         return_message += "\n" unless return_message == ''
@@ -53,6 +59,7 @@ module Rototiller
       # Does this param require the task to stop
       # Determined by the interactions between @name, @env_vars, @arguments
       # @return [true|nil] if this param requires a stop
+      # @api public
       def stop
         return true if @arguments.stop?
         return true unless @name

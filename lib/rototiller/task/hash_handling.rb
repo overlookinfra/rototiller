@@ -3,8 +3,11 @@ module Rototiller
     module HashHandling
 
       # equates methods to keys inside a hash or an array of hashes
+      # @api public
+      # @example HashHandling.send_hash_keys_as_methods_to_self({:name => "myname"})
       # @param [Hash] hash attempt to use keys as setter or getter methods on self
       # @raise [ArgumentError] if a key is not a valid method on self
+      # @return [void]
       def send_hash_keys_as_methods_to_self(hash)
 
         hash = [hash].flatten

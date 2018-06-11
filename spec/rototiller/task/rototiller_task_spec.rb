@@ -55,6 +55,12 @@ module Rototiller::Task
           expect(task_named.name).to eq :task_name
         end
 
+        # FIXME: damnit, where is this extra newline coming from?
+        #   i'm pretty sure it's the way we're printing (with puts) empty messages from Command or EnvVar
+        #it "doesn't have spurious newlines" do
+          #expect{ described_run_task }.not_to output(anything).to_stdout
+        #end
+
         it "creates a default description with '#{init_method}'" do
           expect(task_named).to receive(:run_task) { true } unless init_method == :define_task
           # FIXME: WHY does define_task not appear to work here (works in acceptance)
@@ -101,6 +107,44 @@ module Rototiller::Task
           expect { described_run_task }.not_to output(/Bad/).to_stderr
           expect { described_run_task }.not_to output(/Bad/).to_stdout
         end
+
+        # can't use the task.add_env stuff below with define_task
+        if (init_method == :new)
+          it 'correctly indents messages' do
+            task.add_env({:name => "TASKENVVAR", :default => "somevalue", :message => "task env message"})
+            c = task.add_command({:name =>  'echo something', :message => "command message"})
+            c.add_env({:name => 'SOMEENVVAR', :message => "command env message"})
+            c.add_argument do |a|
+              a.name = '--myargument'
+              a.message = "argument message"
+              a.add_env({:name => 'ARGENV', :message => "args env message"})
+            end
+            c.add_option do |o|
+              o.name = '--myoption'
+              o.message = "option message"
+              o.add_env({:name => 'OPTENV', :message => "option env message"})
+              o.add_argument do |a|
+                a.name = 'optionarg'
+                a.message = "option argument message"
+                a.add_env({:name => 'OPTARGENV', :message => "options args env message"})
+              end
+            end
+            #FIXME: wth is this extra newline? see other test above as well
+            expected_output = <<-HERE
+\e[32m[I] \e[0m'TASKENVVAR': using default: 'somevalue'; 'task env message'
+echo something --myoption optionarg --myargument
+  command message
+  \e[32m[I] \e[0m'SOMEENVVAR': using default: 'echo something'; 'command env message'
+  \e[32m[I] \e[0m'OPTENV': using default: '--myoption'; 'option env message'
+  \e[32m[I] \e[0m'OPTARGENV': using default: 'optionarg'; 'options args env message'
+
+  \e[32m[I] \e[0m'ARGENV': using default: '--myargument'; 'args env message'
+something --myoption optionarg --myargument
+            HERE
+            expect { described_run_task }.to output(expected_output).to_stdout
+          end
+        end
+
       end
 
       context 'with custom exit status' do
@@ -133,6 +177,7 @@ module Rototiller::Task
             described_verbose(false)
           end
         end
+        # also, the task takes care of printing the command, now
         it 'doesn\'t print if fail_on_error is false' do
           expect(task).to_not receive(:exit)
           task.fail_on_error = false
@@ -142,7 +187,7 @@ module Rototiller::Task
           if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.0.0')
             expect { described_run_task }.to output(/No such file or directory - exit 2/).to_stderr
           else
-            expect { described_run_task }.to output("\n\n").to_stderr
+            expect { described_run_task }.to output("\n").to_stderr
           end
         end
       end
@@ -208,7 +253,7 @@ module Rototiller::Task
                        {:name => 'VAR3',:message => env_desc},{:name => env_name,:message => env_desc})
           expect(task).to receive(:exit)
           expect{ described_run_task }
-            .to output(/ERROR: environment-variable not set and no default provided:.*#{env_name}.*#{env_desc}.*VAR2.*VAR3.*/m)
+            .to output(/\[E\] required: .*#{env_name}.*#{env_desc}.*VAR2.*VAR3.*/m)
             .to_stdout
         end
       end

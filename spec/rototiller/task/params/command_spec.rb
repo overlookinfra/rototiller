@@ -10,18 +10,24 @@ module Rototiller
         # stub out all the PRY env use, or the mocks for ENV below will break pry
         pryrc = ENV['PRYRC']
         disable_pry = ENV['DISABLE_PRY']
+        fail_pry = ENV['FAIL_PRY']
         home = ENV['HOME']
         ansicon = ENV['ANSICON']
         term = ENV['TERM']
         pager = ENV['PAGER']
         lines = ENV['LINES']
+        rows = ENV['ROWS']
+        columns = ENV['COLUMNS']
         allow(ENV).to receive(:[]).with('PRYRC').and_return(pryrc)
         allow(ENV).to receive(:[]).with('DISABLE_PRY').and_return(disable_pry)
+        allow(ENV).to receive(:[]).with('FAIL_PRY').and_return(fail_pry)
         allow(ENV).to receive(:[]).with('HOME').and_return(home)
         allow(ENV).to receive(:[]).with('ANSICON').and_return(ansicon)
         allow(ENV).to receive(:[]).with('TERM').and_return(term)
         allow(ENV).to receive(:[]).with('PAGER').and_return(pager)
         allow(ENV).to receive(:[]).with('LINES').and_return(lines)
+        allow(ENV).to receive(:[]).with('ROWS').and_return(rows)
+        allow(ENV).to receive(:[]).with('COLUMNS').and_return(columns)
 
         @arg_name      = "VARNAME_#{(0...8).map { (65 + rand(26)).chr }.join}"
         @command_name  = 'echo'
@@ -165,7 +171,7 @@ module Rototiller
 
       describe '#message' do
         it 'returns the formatted message' do
-          @formatted_message = 'killer message'
+          @formatted_message = "  killer message"
           expect(command.message).to eq(@formatted_message + "\n")
         end
       end

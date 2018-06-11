@@ -27,9 +27,10 @@ module Rototiller
       end
 
       # format the messages inside this ParamCollection
+      # @param indent [String] how far to indent each message
       # @return [String] messages from the contents of this ParamCollection
-      def messages
-        @collection.map { |param| param.message }.join('')
+      def messages(indent=0)
+        @collection.map { |param| param.message(indent) }.join('')
       end
 
       # Do any of the contents of this ParamCollection require the task to stop

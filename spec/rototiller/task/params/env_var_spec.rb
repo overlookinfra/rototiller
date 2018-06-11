@@ -2,18 +2,11 @@ require 'spec_helper'
 
 module Rototiller
   module Task
-
     describe EnvVar do
-
-      @count = 0
       ['with_default', 'without_default'].each do |has_default|
-
         context has_default do
-
           ['ENV set', 'ENV not set'].each do |env_set|
-
             context env_set do
-
               let (:message_header) { 'The environment variable:' }
 
               before(:each) do
@@ -35,24 +28,21 @@ module Rototiller
 
                 # validation
                 if (has_default == 'with_default' && env_set == 'ENV not set')
-                  @formatted_message = "\e[32mINFO: no system environment-variable value, using default provided: \e[0m'#{@var_name}': '#{@var_default}': '#{@var_message}'"
+                  @formatted_message = "\e[32m[I] \e[0m'#{@var_name}': using default: '#{@var_default}'; '#{@var_message}'"
                   @expected_stop = false
                 elsif (has_default == 'without_default' && env_set == 'ENV not set')
-                  @formatted_message = "\e[31mERROR: environment-variable not set and no default provided: \e[0m'#{@var_name}': '#{@var_message}'"
+                  @formatted_message = "\e[31m[E] required: \e[0m'#{@var_name}'; '#{@var_message}'"
                   @expected_stop = true
                 elsif (has_default == 'with_default' && env_set == 'ENV set')
-                  @formatted_message = "\e[33mINFO: environment-variable overridden from system, not using default: \e[0m'#{@var_name}': default: '#{@var_default}' using: '#{@var_env_value}': '#{@var_message}'"
+                  @formatted_message = "\e[33m[I] \e[0m'#{@var_name}': using system: '#{@var_env_value}', default: '#{@var_default}'; '#{@var_message}'"
                   @expected_stop = false
                 elsif (has_default == 'without_default' && env_set == 'ENV set')
-                  @formatted_message = "\e[33mINFO: using system environment-variable value, no default provided: \e[0m'#{@var_name}': '#{@var_env_value}': '#{@var_message}'"
+                  @formatted_message = "\e[33m[I] \e[0m'#{@var_name}': using system: '#{@var_env_value}', no default; '#{@var_message}'"
                   @expected_stop = false
                 end
-
-
               end
 
               describe '.var' do
-
                 it 'returns the var' do
                   expect(@env_var.name).to eq(@var_name)
                 end
@@ -65,14 +55,12 @@ module Rototiller
               end
 
               describe '.default' do
-
                 it 'returns the default value' do
                   expect(@env_var.default).to eq(@expected_var_default)
                 end
               end
 
               describe '.stop' do
-
                 it 'knows if it should stop' do
                   expect(@env_var.stop).to eq(@expected_stop)
                 end

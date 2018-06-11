@@ -213,15 +213,17 @@ module Rototiller
 
       # @return [String] formatted messages from all of Command's pieces
       #   itself, env_vars, switches, options, arguments
-      # TODO make private method? so that it will throw an error if yielded to?
-      def message
-        return_message = @message
-        return_message += "\n" if @message && @message != ''
+      def message(indent=0)
+        return_message = ''
+        if @message && @message != ''
+          return_message = "  #{@message}\n"
+        end
+        number_of_indents = 1
         return [return_message,
-                @env_vars.messages,
-                @switches.messages,
-                @options.messages,
-                @arguments.messages,
+                @env_vars.messages(indent=number_of_indents),
+                @switches.messages(indent=number_of_indents),
+                @options.messages(indent=number_of_indents),
+                @arguments.messages(indent=number_of_indents),
         ].join('')
       end
 

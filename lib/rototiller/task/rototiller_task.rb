@@ -89,23 +89,22 @@ module Rototiller
       private
 
       # @private
-      def print_messages
-        puts @commands.messages
-        puts @env_vars.messages
-      end
-
-      # @private
       def stop_task?
-        exit_code = 1
-        exit exit_code if @env_vars.stop? || @commands.stop?
+        if @env_vars.stop? || @commands.stop?
+          $stderr.puts @commands.messages
+          exit_code = 1
+          exit exit_code
+        end
       end
 
       # @private
       def run_task
-        print_messages
+        puts @env_vars.messages
         stop_task?
         @commands.each do |command|
+          #print command and messages at top
           puts command
+          puts command.message
 
           begin
             command.run
@@ -114,9 +113,10 @@ module Rototiller
           command_failed = command.result.exit_code > 0
 
           if command_failed
-            $stderr.puts "'#{command}' failed" if @verbose
+            #print command and messages at bottom, if failed
+            puts command
+            $stderr.puts "  '#{command}' failed" if @verbose
             $stderr.puts command.message
-            $stderr.puts @env_vars.messages
             exit command.result.exit_code if fail_on_error
           end
         end

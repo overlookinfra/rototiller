@@ -53,29 +53,36 @@
 
     desc "parent task for dependencies test. this one also uses an environment variable"
     rototiller_task :parent_task do |task|
-      # most method initializers take either a hash, or block syntax (see next task)
-      task.add_env({:name     => 'RANDOM_VAR', :default => 'default value'})
-      task.add_env({:name     => 'RANDOM_VAR2', :default => 'default value2'})
-      task.add_command({:name => "echo 'i am testing everything with $RANDOM_VAR = #{ENV['RANDOM_VAR']}'"})
-      task.add_command({:name => "echo 'some other command!'"})
+      # most methods take either a hash, or block syntax (see next task)
+      ENV['HAS_VALUE_NO_DEFAULT'] = 'from environment'
+      task.add_env({:name     => 'HAS_VALUE_NO_DEFAULT'})
+      # rototiller will set this in the environment so the task, programs, can use it
+      task.add_env({:name     => 'NO_VALUE_HAS_DEFAULT',  :default => 'default value'})
+      ENV['HAS_VALUE_HAS_DEFAULT'] = 'from environment'
+      task.add_env({:name     => 'HAS_VALUE_HAS_DEFAULT', :default => 'default value'})
+      task.add_command({:name => 'echo NO_VALUE_NO_DEFAULT:  "$NO_VALUE_NO_DEFAULT"'})
+      task.add_command({:name => 'echo HAS_VALUE_NO_DEFAULT:  \"$HAS_VALUE_NO_DEFAULT\"'})
+      task.add_command({:name => 'echo NO_VALUE_HAS_DEFAULT:  \"$NO_VALUE_HAS_DEFAULT\"'})
+      task.add_command({:name => 'echo HAS_VALUE_HAS_DEFAULT: \"$HAS_VALUE_HAS_DEFAULT\"'})
     end
 
 produces:
 
     # added environment variable defaults are set, implicitly, if not found
     #   this way, their value can be used in the task
-    # FIXME... this is a bug?  i think it's supposed to set vars with default values even at task level??
     $) rake parent_task
-    INFO: The environment variable: 'RANDOM_VAR' is not set. Proceeding with default value: 'default value':
-    INFO: The environment variable: 'RANDOM_VAR2' is not set. Proceeding with default value: 'default value2':
-    i am running this command with $RANDOM_VAR =
-    some other command!
+    [I] 'HAS_VALUE_NO_DEFAULT': using system: 'from environment', no default; ''
+    [I] 'NO_VALUE_HAS_DEFAULT': using default: 'default value'; ''
+    [I] 'HAS_VALUE_HAS_DEFAULT': using system: 'from environment', default: 'default value'; ''
+    echo NO_VALUE_NO_DEFAULT:  "$NO_VALUE_NO_DEFAULT"
+    NO_VALUE_NO_DEFAULT:
+    echo HAS_VALUE_NO_DEFAULT:  \"$HAS_VALUE_NO_DEFAULT\"
+    HAS_VALUE_NO_DEFAULT: "from environment"
+    echo NO_VALUE_HAS_DEFAULT:  \"$NO_VALUE_HAS_DEFAULT\"
+    NO_VALUE_HAS_DEFAULT: "default value"
+    echo HAS_VALUE_HAS_DEFAULT: \"$HAS_VALUE_HAS_DEFAULT\"
+    HAS_VALUE_HAS_DEFAULT: "from environment"
 
-    $) rake parent_task RANDOM_VAR=redrum
-    INFO: The environment variable: 'RANDOM_VAR' was found with value: 'redrum':
-    INFO: The environment variable: 'RANDOM_VAR2' is not set. Proceeding with default value: 'default value2':
-    i am running this command with $RANDOM_VAR = redrum
-    some other command!
 &nbsp;
 
 <a name="Command"></a>
@@ -101,31 +108,27 @@ produces:
 produces:
 
     # we didn't override the command with its env_var, so shell complains about nonsuch and exits
-    $ rake child RANDOM_VAR=redrum
-    INFO: The environment variable: 'RANDOM_VAR' was found with value: 'redrum':
-    INFO: The environment variable: 'RANDOM_VAR2' is not set. Proceeding with default value: 'default value2':
-    i am running this command with $RANDOM_VAR = redrum
-    some other command!
-    sh: nonesuch: command not found
+    $) be rake -f docs/Rakefile.
+    example child
+
+    nonesuch
+      [I] 'COMMAND_EXE1': using default: 'nonesuch'; ''
+      No such file or directory - nonesuch
+      nonesuch
+        [I] 'COMMAND_EXE1': using default: 'nonesuch'; ''
 
     # now we've overridden the first command to echo partial success
     #  but the next command was not overridden by its environment variable, which has no default
-    $ rake child COMMAND_EXE1='echo partial success'
-    INFO: The environment variable: 'RANDOM_VAR' is not set. Proceeding with default value: 'default value':
-    INFO: The environment variable: 'RANDOM_VAR2' is not set. Proceeding with default value: 'default value2':
-    i am running this command with $RANDOM_VAR =
-    some other command!
-    partial success
-    sh: meneither: command not found
+    $) be rake -f docs/Rakefile.example child COMMAND_EXE1="echo i work now" COMMAND_EXE2="but not i"
 
-    # NOW our silly example works!
-    $ rake child COMMAND_EXE1='echo partial success' COMMAND_EXE2='echo awwww yeah!'
-    INFO: The environment variable: 'RANDOM_VAR' is not set. Proceeding with default value: 'default value':
-    INFO: The environment variable: 'RANDOM_VAR2' is not set. Proceeding with default value: 'default value2':
-    i am running this command with $RANDOM_VAR =
-    some other command!
-    partial success
-    awwww yeah!
+    echo i work now
+      [I] 'COMMAND_EXE1': using system: 'echo i work now', default: 'nonesuch'; ''
+      i work now
+      but not i
+        [I] 'COMMAND_EXE2': using system: 'but not i', default: 'meneither'; ''
+        No such file or directory - but
+        but not i
+          [I] 'COMMAND_EXE2': using system: 'but not i', default: 'meneither'; ''
 
 <a name="Command-add_switch"></a>
 ### #add_switch
@@ -182,7 +185,6 @@ produces:
           o.add_argument do |arg|
             arg.name = 'argument'
             arg.add_env({:name => 'ARG_OVERRIDE', :message => 'message at the env for argument'})
-            arg.message = 'This is the message at the option-argument level'
           end
         end
       end
@@ -190,20 +192,44 @@ produces:
 
 produces:
 
-    $ rake -f docs/Rakefile.example variable_switch
-    command_name --switch --option argument arguments go last
-
-    $ rake --rakefile docs/Rakefile.example variable_switch --verbose
+    $) rake -f docs/Rakefile.example variable_switch
     echo command_name --switch --option argument arguments go last
+      using `echo` to show how to override command portions using environment vars
+      [I] 'CRASH_OVERRIDE': using default: '--switch'; 'this env overrides `switch`'
+      [I] 'OPT_OVERRIDE': using default: '--option'; 'this env overrides --option'
+      [I] 'OPT_ARG_OVERRIDE': using default: 'argument'; 'message at the env for option argument'
+
+      [I] 'ARG_OVERRIDE': using default: 'arguments go last'; 'this env overrides `arguments go last`'
     command_name --switch --option argument arguments go last
 
-    $ rake --rakefile docs/Rakefile.example variable_switch CRASH_OVERRIDE='and burn'
+    $) rake --rakefile docs/Rakefile.example variable_switch CRASH_OVERRIDE='and burn'
+    echo command_name and burn --option argument arguments go last
+      using `echo` to show how to override command portions using environment vars
+      [I] 'CRASH_OVERRIDE': using system: 'and burn', default: '--switch'; 'this env overrides `switch`'
+      [I] 'OPT_OVERRIDE': using default: '--option'; 'this env overrides --option'
+      [I] 'OPT_ARG_OVERRIDE': using default: 'argument'; 'message at the env for option argument'
+
+      [I] 'ARG_OVERRIDE': using default: 'arguments go last'; 'this env overrides `arguments go last`'
     command_name and burn --option argument arguments go last
 
-    $ rake --rakefile docs/Rakefile.example variable_switch OPT_OVERRIDE='--real_option'
+    $) rake --rakefile docs/Rakefile.example variable_switch OPT_OVERRIDE='--real_option'
+    echo command_name --switch --real_option argument arguments go last
+      using `echo` to show how to override command portions using environment vars
+      [I] 'CRASH_OVERRIDE': using default: '--switch'; 'this env overrides `switch`'
+      [I] 'OPT_OVERRIDE': using system: '--real_option', default: '--option'; 'this env overrides --option'
+      [I] 'OPT_ARG_OVERRIDE': using default: 'argument'; 'message at the env for option argument'
+
+      [I] 'ARG_OVERRIDE': using default: 'arguments go last'; 'this env overrides `arguments go last`'
     command_name --switch --real_option argument arguments go last
 
-    $ rake --rakefile docs/Rakefile.example variable_switch ARG_OVERRIDE='opt arg'
-    command_name --switch --option opt arg arguments go last
+    $) rake --rakefile docs/Rakefile.example variable_switch ARG_OVERRIDE='opt arg'
+    echo command_name --switch --option argument opt arg
+      using `echo` to show how to override command portions using environment vars
+      [I] 'CRASH_OVERRIDE': using default: '--switch'; 'this env overrides `switch`'
+      [I] 'OPT_OVERRIDE': using default: '--option'; 'this env overrides --option'
+      [I] 'OPT_ARG_OVERRIDE': using default: 'argument'; 'message at the env for option argument'
+
+      [I] 'ARG_OVERRIDE': using system: 'opt arg', default: 'arguments go last'; 'this env overrides `arguments go last`'
+    command_name --switch --option argument opt arg
 
     # what do you think ARG_OVERRIDE2 does?

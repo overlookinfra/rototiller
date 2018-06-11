@@ -44,22 +44,27 @@ module Rototiller
       end
 
       # The formatted messages about this EnvVar's status to be displayed to the user
+      # @param indent [String] how far to indent each message
       # @return [String] the EnvVar's message, formatted for color and meaningful to the state of the EnvVar
-      def message
+      INDENT_ARRAY = ["","  "]
+      def message(indent=0)
+        # INDENT_ARRAY above, only supports to 1
+        #   it turns out we really only want one level of indents
+        raise ArgumentError.new(indent) if indent > 1
         this_message = String.new
 
         if env_status    == STATUS[:nodefault_noexist]
-          this_message << red_text('ERROR: environment-variable not set and no default provided: ')
-          this_message << "'#{@name}': '#{@message}'\n"
+          this_message << INDENT_ARRAY[ indent ] + red_text('[E] required: ')
+          this_message << "'#{@name}'; '#{@message}'\n"
         elsif env_status == STATUS[:nodefault_exist]
-          this_message << yellow_text('INFO: using system environment-variable value, no default provided: ')
-          this_message << "'#{@name}': '#{@value}': '#{@message}'\n"
+          this_message << INDENT_ARRAY[ indent ] + yellow_text('[I] ')
+          this_message << "'#{@name}': using system: '#{@value}', no default; '#{@message}'\n"
         elsif env_status == STATUS[:default_noexist]
-          this_message << green_text('INFO: no system environment-variable value, using default provided: ')
-          this_message << "'#{@name}': '#{@value}': '#{@message}'\n"
+          this_message << INDENT_ARRAY[ indent ] + green_text('[I] ')
+          this_message << "'#{@name}': using default: '#{@value}'; '#{@message}'\n"
         elsif env_status == STATUS[:default_exist]
-          this_message << yellow_text('INFO: environment-variable overridden from system, not using default: ')
-          this_message << "'#{@name}': default: '#{@default}' using: '#{@value}': '#{@message}'\n"
+          this_message << INDENT_ARRAY[ indent ] + yellow_text('[I] ')
+          this_message << "'#{@name}': using system: '#{@value}', default: '#{@default}'; '#{@message}'\n"
         end
 
       end

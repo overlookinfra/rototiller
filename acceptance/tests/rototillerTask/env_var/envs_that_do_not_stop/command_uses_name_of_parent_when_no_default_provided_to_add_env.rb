@@ -41,7 +41,7 @@ end
 
       assert_match(/I_am_the_commands_name/, result.stdout, "The expected command was not observed")
 
-      rototiller_output_regex = /INFO: no system environment-variable.*using default.*#{env_no_default[:name]}.*#{env_no_default[:default]}.*#{env_no_default[:message]}/
+      rototiller_output_regex = /\[I\] .*#{env_no_default[:name]}.*using default.*#{env_no_default[:default]}.*#{env_no_default[:message]}/
       assert_msg = 'The expected output was not observed'
       assert_match(rototiller_output_regex, result.stdout, assert_msg)
       assert(result.exit_code == 0, 'The expected message was not observed')
@@ -55,7 +55,7 @@ end
 
       assert_match(/#{test_env_validation}/, result.stdout, "The command was not overridden by the value of the ENV")
 
-      rototiller_output_regex = /INFO: environment-variable overridden.*#{env_no_default[:name]}.*#{env_no_default[:default]}.*#{env_no_default[:message]}/
+      rototiller_output_regex = /\[I\] .*#{env_no_default[:name]}.*using system.*default.*#{env_no_default[:default]}.*#{env_no_default[:message]}/
       assert_msg = 'The expected output was not observed'
       assert_match(rototiller_output_regex, result.stdout, assert_msg)
       assert(result.exit_code == 0, 'The expected message was not observed')

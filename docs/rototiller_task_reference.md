@@ -60,7 +60,7 @@
       task.add_env({:name     => 'NO_VALUE_HAS_DEFAULT',  :default => 'default value'})
       ENV['HAS_VALUE_HAS_DEFAULT'] = 'from environment'
       task.add_env({:name     => 'HAS_VALUE_HAS_DEFAULT', :default => 'default value'})
-      #task.add_command({:name => 'echo NO_VALUE_NO_DEFAULT:  "$NO_VALUE_NO_DEFAULT"'})
+      task.add_command({:name => 'echo NO_VALUE_NO_DEFAULT:  "$NO_VALUE_NO_DEFAULT"'})
       task.add_command({:name => 'echo HAS_VALUE_NO_DEFAULT:  \"$HAS_VALUE_NO_DEFAULT\"'})
       task.add_command({:name => 'echo NO_VALUE_HAS_DEFAULT:  \"$NO_VALUE_HAS_DEFAULT\"'})
       task.add_command({:name => 'echo HAS_VALUE_HAS_DEFAULT: \"$HAS_VALUE_HAS_DEFAULT\"'})
@@ -74,14 +74,13 @@ produces:
     [I] 'HAS_VALUE_NO_DEFAULT': using system: 'from environment', no default; ''
     [I] 'NO_VALUE_HAS_DEFAULT': using default: 'default value'; ''
     [I] 'HAS_VALUE_HAS_DEFAULT': using system: 'from environment', default: 'default value'; ''
+    echo NO_VALUE_NO_DEFAULT:  "$NO_VALUE_NO_DEFAULT"
+    NO_VALUE_NO_DEFAULT:
     echo HAS_VALUE_NO_DEFAULT:  \"$HAS_VALUE_NO_DEFAULT\"
-    echo HAS_VALUE_NO_DEFAULT:  \"$HAS_VALUE_NO_DEFAULT\";
     HAS_VALUE_NO_DEFAULT: "from environment"
     echo NO_VALUE_HAS_DEFAULT:  \"$NO_VALUE_HAS_DEFAULT\"
-    echo NO_VALUE_HAS_DEFAULT:  \"$NO_VALUE_HAS_DEFAULT\";
     NO_VALUE_HAS_DEFAULT: "default value"
     echo HAS_VALUE_HAS_DEFAULT: \"$HAS_VALUE_HAS_DEFAULT\"
-    echo HAS_VALUE_HAS_DEFAULT: \"$HAS_VALUE_HAS_DEFAULT\";
     HAS_VALUE_HAS_DEFAULT: "from environment"
 
 &nbsp;

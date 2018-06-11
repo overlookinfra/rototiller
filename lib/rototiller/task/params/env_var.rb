@@ -46,10 +46,11 @@ module Rototiller
       # The formatted messages about this EnvVar's status to be displayed to the user
       # @param indent [String] how far to indent each message
       # @return [String] the EnvVar's message, formatted for color and meaningful to the state of the EnvVar
-      INDENT_ARRAY = ["","  ","    ","      ","        ","          "]
+      INDENT_ARRAY = ["","  "]
       def message(indent=0)
-        # we only need up to indent 4, really
-        indent = 1 if indent > 1
+        # INDENT_ARRAY above, only supports to 1
+        #   it turns out we really only want one level of indents
+        raise ArgumentError.new(indent) if indent > 1
         this_message = String.new
 
         if env_status    == STATUS[:nodefault_noexist]

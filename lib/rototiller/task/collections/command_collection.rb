@@ -1,9 +1,8 @@
-require 'rototiller/task/collections/param_collection'
-require 'rototiller/task/params/command'
+require "rototiller/task/collections/param_collection"
+require "rototiller/task/params/command"
 
 module Rototiller
   module Task
-
     # @api public
     # @example CommandCollection.new
     class CommandCollection < ParamCollection
@@ -15,6 +14,5 @@ module Rototiller
         Command
       end
     end
-
   end
 end

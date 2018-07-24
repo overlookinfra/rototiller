@@ -1,9 +1,8 @@
-require 'rototiller/task/collections/env_collection'
-require 'rototiller/task/collections/argument_collection'
+require "rototiller/task/collections/env_collection"
+require "rototiller/task/collections/argument_collection"
 
 module Rototiller
   module Task
-
     # The Option class to implement rototiller command Option handling
     #   via a RototillerTask's #add_command and Command's #add_option
     #   contains information about a Switch's state, as influenced by environment variables, for instance
@@ -11,9 +10,8 @@ module Rototiller
     # @attr [String] name The name of the option to add to a command string
     # @api public
     class Option < Switch
-
       # @api public
-      def initialize(args={}, &block)
+      def initialize(args = {}, &block)
         @arguments = ArgumentCollection.new
         super(args, &block)
       end
@@ -28,13 +26,13 @@ module Rototiller
       # @yield [a] Optional block syntax allows you to specify information about the argument, available methods match hash keys
       # @api public
       def add_argument(*args, &block)
-        raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
+        raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
         if block_given?
           @arguments.push(Argument.new(&block))
         else
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
             error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError.new(error_string) unless arg.is_a?(Hash)
+            raise ArgumentError, error_string unless arg.is_a?(Hash)
             @arguments.push(Argument.new(arg))
           end
         end
@@ -45,15 +43,15 @@ module Rototiller
       #   used to form the complete, runable command string
       # @api public
       def to_str
-        [@name.to_s, @arguments.to_s].compact.join(' ')
+        [@name.to_s, @arguments.to_s].compact.join(" ")
       end
 
       # @return [String] formatted messages from all of Switch's pieces
       #   itself, env_vars
       # @api public
       def message(indent=0)
-        return_message = [@env_vars.messages(indent), @arguments.messages(indent)].join ''
-        return_message += "\n" unless return_message == ''
+        return_message = [@env_vars.messages(indent), @arguments.messages(indent)].join ""
+        return_message += "\n" unless return_message == ""
       end
 
       # Does this param require the task to stop
@@ -64,7 +62,6 @@ module Rototiller
         return true if @arguments.stop?
         return true unless @name
       end
-
     end
   end
 end

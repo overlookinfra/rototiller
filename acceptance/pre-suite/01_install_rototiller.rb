@@ -1,8 +1,8 @@
-test_name 'install rototiller' do
-  sut = find_only_one('agent')
+test_name "install rototiller" do
+  sut = find_only_one("agent")
 
-  gem_name = ''
-  step 'build rototiller' do
+  gem_name = ""
+  step "build rototiller" do
     built_gem_info = `gem build rototiller.gemspec`
     # fun
     # get the gemname from the output of gem build
@@ -15,8 +15,8 @@ test_name 'install rototiller' do
   end
   scp_to(sut, gem_name, gem_name)
 
-  if ENV['RAKE_VER']
-    rake_version = Gem::Version.new(ENV['RAKE_VER']).approximate_recommendation
+  if ENV["RAKE_VER"]
+    rake_version = Gem::Version.new(ENV["RAKE_VER"]).approximate_recommendation
     on(sut, "gem install rake --force --version '#{rake_version}'")
   else
     on(sut, "gem install rake --force")

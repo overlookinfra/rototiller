@@ -1,9 +1,8 @@
-require 'rototiller/task/collections/param_collection'
-require 'rototiller/task/params/env_var'
+require "rototiller/task/collections/param_collection"
+require "rototiller/task/params/env_var"
 
 module Rototiller
   module Task
-
     # @api public
     # @example EnvCollection.new
     class EnvCollection < ParamCollection
@@ -20,14 +19,12 @@ module Rototiller
       # @example mostrecent = thiscollection.last
       # @return [String] last set environment variable or default
       def last
-        if self.any?
-          last_known_env_var = self.map{|x| x.value}.compact.last
+        if any?
+          last_known_env_var = map(&:value).compact.last
           # ruby converts nil to "", so guard against single non-set env vars here
           last_known_env_var.to_s if last_known_env_var
         end
       end
-
     end
-
   end
 end

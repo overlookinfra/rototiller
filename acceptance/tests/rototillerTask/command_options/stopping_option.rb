@@ -1,28 +1,27 @@
-require 'beaker/hosts'
-require 'rakefile_tools'
-require 'test_utilities'
+require "beaker/hosts"
+require "rakefile_tools"
+require "test_utilities"
 
-test_name 'add_env to argument can stop an option' do
-
+test_name "add_env to argument can stop an option" do
   extend Beaker::Hosts
   extend RakefileTools
   extend TestUtilities
 
-  option_name = '--foo'
-  option_argument = 'baz'
+  option_name = "--foo"
+  option_argument = "baz"
 
-  test_filename = File.basename(__FILE__, '.*')
+  test_filename = File.basename(__FILE__, ".*")
   override_env = test_filename.upcase + random_string
-  env_value = 'I_CAME_FROM_THE_ENVIRONMENT'
+  env_value = "I_CAME_FROM_THE_ENVIRONMENT"
 
-  @block_syntax = 'block_syntax'
-  #TODO alter to make option stop
+  @block_syntax = "block_syntax"
+  # TODO: alter to make option stop
   block_body = {
-    :add_command => {
-      :name => 'echo', :add_option => {
-        :name => option_name, :add_argument => {
-          :add_env => {
-            :name => override_env,
+    add_command: {
+      name: "echo", add_option: {
+        name: option_name, add_argument: {
+          add_env: {
+            name: override_env
           }
         }
       }
@@ -30,7 +29,7 @@ test_name 'add_env to argument can stop an option' do
   }
 
   # create a second task defined with hash syntax
-  @hash_syntax = 'hash_syntax'
+  @hash_syntax = "hash_syntax"
   hash_body = block_body
   hash_body[:add_command][:add_option][:keep_as_hash] = true
 
@@ -46,32 +45,32 @@ end
   EOS
   rakefile_path = create_rakefile_on(sut, rakefile_contents)
 
-  step 'Run rake task defined in block syntax, ENV not set (should stop)' do
-    execute_task_on(sut, @block_syntax, rakefile_path, :accept_all_exit_codes => true) do |result|
+  step "Run rake task defined in block syntax, ENV not set (should stop)" do
+    execute_task_on(sut, @block_syntax, rakefile_path, accept_all_exit_codes: true) do |result|
       command_regex = /#{option_name} #{option_argument}/
       assert_no_match(command_regex, result.stdout, "The rake task #{@block_syntax} was expected to stop, but the task ran")
     end
   end
 
-  step 'Run rake task with add_option defined as a hash, ENV not set (should stop)' do
-    execute_task_on(sut, @hash_syntax, rakefile_path, :accept_all_exit_codes => true) do |result|
+  step "Run rake task with add_option defined as a hash, ENV not set (should stop)" do
+    execute_task_on(sut, @hash_syntax, rakefile_path, accept_all_exit_codes: true) do |result|
       command_regex = /#{option_name} #{option_argument}/
       assert_no_match(command_regex, result.stdout, "The rake task #{@hash_syntax} was expected to stop, but the task ran")
     end
   end
 
-  step 'Set the env on the host' do
+  step "Set the env on the host" do
     sut.add_env_var(override_env, env_value)
   end
 
-  step 'Run rake task defined in block syntax, ENV set' do
+  step "Run rake task defined in block syntax, ENV set" do
     execute_task_on(sut, @block_syntax, rakefile_path) do |result|
       command_regex = /#{option_name} #{env_value}/
       assert_match(command_regex, result.stdout, "The option argument #{env_value} was not observed on the command line in block syntax")
     end
   end
 
-  step 'Run rake task with add_option defined as a hash, ENV set' do
+  step "Run rake task with add_option defined as a hash, ENV set" do
     execute_task_on(sut, @hash_syntax, rakefile_path) do |result|
       command_regex = /#{option_name} #{env_value}/
       assert_match(command_regex, result.stdout, "The option argument #{env_value} was not observed on the command line in hash syntax")

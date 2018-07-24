@@ -1,11 +1,11 @@
-require 'rototiller/task/collections/env_collection'
-require 'rototiller/task/collections/switch_collection'
-require 'rototiller/task/collections/option_collection'
-require 'rototiller/task/collections/argument_collection'
+require "rototiller/task/collections/env_collection"
+require "rototiller/task/collections/switch_collection"
+require "rototiller/task/collections/option_collection"
+require "rototiller/task/collections/argument_collection"
+require "English"
 
 module Rototiller
   module Task
-
     # The Command class to implement rototiller command handling
     #   via a RototillerTask's #add_command
     # @since v0.1.0
@@ -15,7 +15,6 @@ module Rototiller
     # @attr_reader [Struct] result A structured command result
     #    contains members: output, exit_code and pid
     class Command < RototillerParam
-
       # this command's name (as specified by user)
       # @return [String] the command to be used, could be considered a default
       attr_accessor :name
@@ -31,7 +30,7 @@ module Rototiller
       # @example task.add_command({:name => "mycommand"})
       # @yield Command object with attributes matching method calls supported by Command
       # @return [Command] object
-      def initialize(args={}, &block)
+      def initialize(args = {})
         # the env_vars that override the command name
         @env_vars      = EnvCollection.new
         @switches      = SwitchCollection.new
@@ -57,18 +56,18 @@ module Rototiller
       # @yield [a] Optional block syntax allows you to specify information about the environment variable, available methods match hash keys described above
       # @return [Env] object
       def add_env(*args, &block)
-        raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
+        raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
         # this is kinda annoying we have to do this for all params? (not DRY)
         #   have to do it this way so EnvVar doesn't become a collection
         #   but if this gets moved to a mixin, it might be more tolerable
         if block_given?
           # send in the name of this Param, so it can be used when no default is given to add_env
-          @env_vars.push(EnvVar.new({:parent_name => @name},&block))
+          @env_vars.push(EnvVar.new({ parent_name: @name }, &block))
         else
-          #TODO: test this with array and non-array single hash
+          # TODO: test this with array and non-array single hash
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
             error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError.new(error_string) unless arg.is_a?(Hash)
+            raise ArgumentError, error_string unless arg.is_a?(Hash)
             # send in the name of this Param, so it can be used when no default is given to add_env
             arg[:parent_name] = @name
             @env_vars.push(EnvVar.new(arg))
@@ -88,17 +87,17 @@ module Rototiller
       # @yield [a] Optional block syntax allows you to specify information about the environment variable, available methods match hash keys described above
       # @return [Switch] object
       def add_switch(*args, &block)
-        raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
+        raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
         # this is kinda annoying we have to do this for all params? (not DRY)
         #   have to do it this way so EnvVar doesn't become a collection
         #   but if this gets moved to a mixin, it might be more tolerable
         if block_given?
           @switches.push(Switch.new(&block))
         else
-          #TODO: test this with array and non-array single hash
+          # TODO: test this with array and non-array single hash
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
             error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError.new(error_string) unless arg.is_a?(Hash)
+            raise ArgumentError, error_string unless arg.is_a?(Hash)
             @switches.push(Switch.new(arg))
           end
         end
@@ -116,17 +115,17 @@ module Rototiller
       # @yield [a] Optional block syntax allows you to specify information about the option, available methods match hash keys
       # @return [Option] object
       def add_option(*args, &block)
-        raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
+        raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
         # this is kinda annoying we have to do this for all params? (not DRY)
         #   have to do it this way so EnvVar doesn't become a collection
         #   but if this gets moved to a mixin, it might be more tolerable
         if block_given?
           @options.push(Option.new(&block))
         else
-          #TODO: test this with array and non-array single hash
+          # TODO: test this with array and non-array single hash
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
             error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError.new(error_string) unless arg.is_a?(Hash)
+            raise ArgumentError, error_string unless arg.is_a?(Hash)
             @options.push(Option.new(arg))
           end
         end
@@ -144,13 +143,13 @@ module Rototiller
       # @yield [a] Optional block syntax allows you to specify information about the option, available methods match hash keys
       # @return [Argument] object
       def add_argument(*args, &block)
-        raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
+        raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
         if block_given?
           @arguments.push(Argument.new(&block))
         else
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
             error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError.new(error_string) unless arg.is_a?(Hash)
+            raise ArgumentError, error_string unless arg.is_a?(Hash)
             @arguments.push(Argument.new(arg))
           end
         end
@@ -164,13 +163,13 @@ module Rototiller
       # @return [String] string represenation of this entire command string
       def to_str
         delete_nil_empty_false([
-          (name if name),
-          @switches.to_s,
-          @options.to_s,
-          @arguments.to_s
-        ]).join(' ').to_s
+                                 (name if name),
+                                 @switches.to_s,
+                                 @options.to_s,
+                                 @arguments.to_s
+                               ]).join(" ").to_s
       end
-      alias :to_s :to_str
+      alias to_s to_str
 
       Result = Struct.new(:output, :exit_code, :pid)
       # run Command locally, capture relevent result data
@@ -182,33 +181,33 @@ module Rototiller
         # make this look a bit like beaker's result class
         #   we may have to convert this to a class if it gets complex
         @result = Result.new
-        @result.output = ''
+        @result.output = ""
 
         read_pipe, write_pipe = IO.pipe
         begin
-          @result.pid = Process.spawn(self.to_str, :out => write_pipe, :err => write_pipe)
+          @result.pid = Process.spawn(to_str, out: write_pipe, err: write_pipe)
         rescue Errno::ENOENT => e
           $stderr.puts e
           @result.output << e.to_s
           @result.exit_code = 127
           raise
         end
-        #create a thread that monitors the process and tells us when it is done
+        # create a thread that monitors the process and tells us when it is done
         @exitstatus = :not_done
         Thread.new do
-          Process.wait(@result.pid);
-          @exitstatus       = $?.exitstatus
+          Process.wait(@result.pid)
+          @exitstatus       = $CHILD_STATUS.exitstatus
           @result.exit_code = @exitstatus
           write_pipe.close
         end
 
-        #FIXME: monitor for deadlock?
+        # FIXME: monitor for deadlock?
         while @exitstatus == :not_done
           begin
             # readpartial will read UP to amount given
             # we should never really need 64k, but it makes the responsiveness
             #   of our output much better when something is really quickly spewing output
-            sixty_four_k = 65536
+            sixty_four_k = 65_536
             this_read = read_pipe.readpartial(sixty_four_k)
           rescue EOFError
             next
@@ -219,9 +218,7 @@ module Rototiller
           sleep 0.001
         end
 
-        if block_given? # if block, send result to the block
-          yield @result
-        end
+        yield @result if block_given? # if block, send result to the block
         @result
       end
 
@@ -232,7 +229,7 @@ module Rototiller
       # @example command.stop
       # TODO make private method? so that it will throw an error if yielded to?
       def stop
-        return true if [@switches, @options, @arguments].any?{ |collection| collection.stop? }
+        return true if [@switches, @options, @arguments].any?(&:stop?)
         return true unless @name
       end
 
@@ -242,8 +239,8 @@ module Rototiller
       # @example puts command.message
       # TODO make private method? so that it will throw an error if yielded to?
       def message(indent=0)
-        return_message = ''
-        if @message && @message != ''
+        return_message = String.new
+        if @message && @message != ""
           return_message = "  #{@message}\n"
         end
         number_of_indents = 1
@@ -252,16 +249,15 @@ module Rototiller
                 @switches.messages(indent=number_of_indents),
                 @options.messages(indent=number_of_indents),
                 @arguments.messages(indent=number_of_indents),
-        ].join('')
+        ].join("")
       end
 
       private
 
       # @api private
       def delete_nil_empty_false(arg)
-        arg.delete_if{ |i| ([nil, '', false].include?(i)) }
+        arg.delete_if { |i| [nil, "", false].include?(i) }
       end
     end
-
   end
 end

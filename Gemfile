@@ -1,3 +1,3 @@
-require './gem_of/lib/gem_of'
+require "./gem_of/lib/gem_of"
 
 eval(GemOf::Gems.new, binding)

@@ -1,8 +1,7 @@
-require 'rototiller/task/hash_handling'
+require "rototiller/task/hash_handling"
 
 module Rototiller
   module Task
-
     # The base class for creating rototiller task params (commands, envs, etc)
     # @since v0.1.0
     # @api public
@@ -26,7 +25,7 @@ module Rototiller
       # @example puts param.message
       # @return [String] <empty string>
       def message
-        return ''
+        ""
       end
 
       # @api public
@@ -35,7 +34,7 @@ module Rototiller
       def parent_name=(name)
         name.each_char do |char|
           message = "You have defined an environment variable with an illegal character: #{char}"
-          raise ArgumentError.new(message) unless char =~ /[a-zA-Z]|\d|_/
+          raise ArgumentError, message unless char =~ /[a-zA-Z]|\d|_/
         end
         @parent_name = name
       end
@@ -43,10 +42,7 @@ module Rototiller
       # @api public
       # @example param.parent_message = other_param.message
       # @return [void]
-      def parent_message=(message)
-        @parent_message = message
-      end
+      attr_writer :parent_message
     end
-
   end
 end

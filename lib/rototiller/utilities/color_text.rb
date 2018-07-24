@@ -1,6 +1,5 @@
 module Rototiller
   module ColorText
-
     # Colors a string of text
     # @param text [String] the text to color
     # @param color [Integer] ASCII-code 30-37 http://ascii-table.com/ansi-escape-sequences.php
@@ -37,6 +36,5 @@ module Rototiller
     def red_text(text)
       colorize(text, 31)
     end
-
   end
 end

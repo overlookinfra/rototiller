@@ -1,10 +1,9 @@
-require 'rototiller/task/collections/env_collection'
-require 'rototiller/task/collections/command_collection'
-require 'rake/tasklib'
+require "rototiller/task/collections/env_collection"
+require "rototiller/task/collections/command_collection"
+require "rake/tasklib"
 
 module Rototiller
   module Task
-
     # The main task type to implement base rototiller features in a Rake task
     # @since v0.1.0
     # @attr_reader [String] name The name of the task for calling via Rake
@@ -37,7 +36,7 @@ module Rototiller
       # sort of private. it's needed by Rake. it should work fine, just not the *good* way to create a RototillerTask
       # @api private
       def self.define_task(*args, &task_block)
-        self.new(*args, &task_block)
+        new(*args, &task_block)
       end
 
       # adds environment variables to be tracked
@@ -51,17 +50,17 @@ module Rototiller
       # @api public
       # @example task.add_env({:name => "SOMENV"})
       def add_env(*args, &block)
-        raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
+        raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
         # this is kinda annoying we have to do this for all params? (not DRY)
         #   have to do it this way so EnvVar doesn't become a collection
         #   but if this gets moved to a mixin, it might be more tolerable
         if block_given?
           @env_vars.push(EnvVar.new(&block))
         else
-          #TODO: test this with array and non-array single hash
+          # TODO: test this with array and non-array single hash
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
             error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError.new(error_string) unless arg.is_a?(Hash)
+            raise ArgumentError, error_string unless arg.is_a?(Hash)
             @env_vars.push(EnvVar.new(arg))
           end
         end
@@ -77,23 +76,22 @@ module Rototiller
       # @api public
       # @example task.add_command({:name => "echo i echo stuff"})
       def add_command(*args, &block)
-        raise ArgumentError.new("#{__method__} takes a block or a hash") if !args.empty? && block_given?
+        raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
         if block_given?
           new_command = Command.new(&block)
           @commands.push(new_command)
         else
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
             error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError.new(error_string) unless arg.is_a?(Hash)
+            raise ArgumentError, error_string unless arg.is_a?(Hash)
             new_command = Command.new(arg)
             @commands.push(new_command)
           end
         end
         # because add_command is at the top of the hierarchy chain, it has to return its produced object
         #   otherwise we yield on the blocks inside and don't have add_env that can handle an Array of hashes.
-        return new_command
+        new_command
       end
-
 
       private
 
@@ -136,7 +134,7 @@ module Rototiller
           end
         end
         # might be useful in output of t.add_command()?  but if not, Command has #result
-        return @commands.map{ |command| command.result }
+        @commands.map(&:result)
       end
 
       # register the new block w/ run_task call in a rake task
@@ -146,11 +144,11 @@ module Rototiller
       def define(args, &task_block)
         # Default task description
         # can be overridden with standard 'desc' DSL method
-        desc 'RototillerTask: A Task with optional environment-variable and command-flag tracking' unless ::Rake.application.last_description
+        desc "RototillerTask: A Task with optional environment-variable and command-flag tracking" unless ::Rake.application.last_description
 
         task(@name, *args) do |_, task_args|
           RakeFileUtils.__send__(:verbose, @verbose) do
-            task_block.call(*[self, task_args].slice(0, task_block.arity)) if task_block
+            yield(*[self, task_args].slice(0, task_block.arity)) if task_block
             run_task
           end
         end
@@ -158,11 +156,9 @@ module Rototiller
 
       #   for unit testing, we need a shortcut around rake's CLI --verbose
       # @api private
-      def set_verbose(verbosity=true)
+      def set_verbose(verbosity = true)
         @verbose = verbosity
       end
-
     end
-
   end
 end

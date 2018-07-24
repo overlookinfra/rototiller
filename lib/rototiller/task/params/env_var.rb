@@ -1,9 +1,8 @@
-require 'rototiller/task/params'
-require 'rototiller/utilities/color_text'
+require "rototiller/task/params"
+require "rototiller/utilities/color_text"
 
 module Rototiller
   module Task
-
     # The main EnvVar type to implement envrironment variable handling
     #   contains its messaging, status, and whether it is required.
     #   The rototiller Param using it knows what to do with its value.
@@ -16,7 +15,7 @@ module Rototiller
     # @attr_reader [Boolean] value    The value of the ENV based on specified default and environment state
     class EnvVar < RototillerParam
       include Rototiller::ColorText
-      STATUS = {:nodefault_noexist=>0, :nodefault_exist=>1, :default_noexist=>2, :default_exist=>3}
+      STATUS = { nodefault_noexist: 0, nodefault_exist: 1, default_noexist: 2, default_exist: 3 }.freeze
 
       # this env_var's name (as specified by user)
       # @return [String] the env_var itself
@@ -43,14 +42,14 @@ module Rototiller
       # @api public
       # @yield EnvVar object with attributes matching method calls supported by EnvVar
       # @return EnvVar object
-      def initialize(args={}, &block)
+      def initialize(args = {})
         @parent_name = args[:parent_name]
         @message ||= args[:parent_message]
         args.delete(:parent_name)
         args.delete(:parent_message)
         block_given? ? (yield self) : send_hash_keys_as_methods_to_self(args)
 
-        raise(ArgumentError, 'A name must be supplied to add_env') unless @name
+        raise(ArgumentError, "A name must be supplied to add_env") unless @name
         @env_value_set_by_us = false
         reset
       end
@@ -79,7 +78,6 @@ module Rototiller
           this_message << INDENT_ARRAY[ indent ] + yellow_text('[I] ')
           this_message << "'#{@name}': using system: '#{@value}', default: '#{@default}'; '#{@message}'\n"
         end
-
       end
 
       # The string representation of this EnvVar; the value on the system, or nil
@@ -88,7 +86,7 @@ module Rototiller
       def to_str
         @value
       end
-      alias :to_s :to_str
+      alias to_s to_str
 
       # Sets the name of the EnvVar
       # @raise [ArgumentError] if name contains an illegal character for bash environment variable
@@ -97,7 +95,7 @@ module Rototiller
       def name=(name)
         name.each_char do |char|
           message = "You have defined an environment variable with an illegal character: #{char}"
-          raise ArgumentError.new(message) unless char =~ /[a-zA-Z]|\d|_/
+          raise ArgumentError, message unless char =~ /[a-zA-Z]|\d|_/
         end
         @name = name
       end
@@ -108,7 +106,7 @@ module Rototiller
       def reset
         # if no default given, use parent param's name
         @default ||= @parent_name
-        (env_value_provided_by_user? || @default) ? @stop = false : @stop = true
+        @stop = env_value_provided_by_user? || @default ? false : true
 
         if @name
           @value = ENV[@name] || @default
@@ -124,7 +122,7 @@ module Rototiller
       # @api private
       def env_value_provided_by_user?
         # its possible that name could not be set
-        (ENV.key?(@name) if @name) ? true : false
+        ENV.key?(@name) if @name ? true : false
       end
 
       # @api private
@@ -134,8 +132,6 @@ module Rototiller
         return STATUS[:default_noexist]   if  @default &&  @env_value_set_by_us
         return STATUS[:default_exist]     if  @default && !@env_value_set_by_us
       end
-
     end
-
   end
 end

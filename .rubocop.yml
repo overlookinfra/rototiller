@@ -2,6 +2,35 @@ AllCops:
   TargetRubyVersion: 2.0
   Exclude:
     - "gem_of/spec/*.rb"
+    - "acceptance/tests/rototillerTask/allows_downstream_pry.rb"  # remove these as we fixup
+    - "acceptance/tests/rototillerTask/arbitraty_ruby_variables_in_rototiller_task.rb"
+    - "acceptance/tests/rototillerTask/command_arguments_with_override.rb"
+    - "acceptance/tests/rototillerTask/command_options/command_options.rb"
+    - "acceptance/tests/rototillerTask/command_options/override_command_option_arg.rb"
+    - "acceptance/tests/rototillerTask/command_options/override_command_option_with_env_var.rb"
+    - "acceptance/tests/rototillerTask/command_options/stopping_option.rb"
+    - "acceptance/tests/rototillerTask/command_switches.rb"
+    - "acceptance/tests/rototillerTask/commands_multiple.rb"
+    - "acceptance/tests/rototillerTask/define_and_list_RototillerTasks.rb"
+    - "acceptance/tests/rototillerTask/dependent_tasks.rb"
+    - "acceptance/tests/rototillerTask/env_var/envs_that_do_not_stop/command_uses_default_supplied_by_add_env.rb"
+    - "acceptance/tests/rototillerTask/env_var/envs_that_do_not_stop/command_uses_name_of_parent_when_no_default_provided_to_add_env.rb"
+    - "acceptance/tests/rototillerTask/env_var/envs_that_do_not_stop/default_prefered_over_name_of_parent.rb"
+    - "acceptance/tests/rototillerTask/env_var/envs_that_do_not_stop/env_with_default_attached_to_task.rb"
+    - "acceptance/tests/rototillerTask/env_var/negative/attempt_to_define_an_env_with_invalid_characters.rb"
+    - "acceptance/tests/rototillerTask/env_var/stopping_envs/env_stops_added_to_command.rb"
+    - "acceptance/tests/rototillerTask/env_var/stopping_envs/env_stops_added_to_command_argument.rb"
+    - "acceptance/tests/rototillerTask/env_var/stopping_envs/env_stops_added_to_option.rb"
+    - "acceptance/tests/rototillerTask/env_var/stopping_envs/env_stops_added_to_option_argument.rb"
+    - "acceptance/tests/rototillerTask/env_var/stopping_envs/env_stops_added_to_switch.rb"
+    - "acceptance/tests/rototillerTask/env_var/stopping_envs/env_stops_attached_to_task.rb"
+    - "acceptance/tests/rototillerTask/env_var/stopping_envs/multiple_stopping_envs_are_reported.rb"
+    - "acceptance/tests/rototillerTask/env_var_values.rb"
+    - "acceptance/tests/rototillerTask/environment_variables.rb"
+    - "acceptance/tests/rototillerTask/override_command_with_env.rb"
+    - "acceptance/tests/rototillerTask/param_messages.rb"
+    - "acceptance/tests/rototillerTask/task_with_args.rb"
+
 # Single quotes being faster is hardly measurable and only affects parse time.
 # # Enforcing double quotes reduces the times where you need to change them
 # # when introducing an interpolation. Use single quotes only if their semantics

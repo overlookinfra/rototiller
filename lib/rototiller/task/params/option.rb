@@ -5,7 +5,7 @@ module Rototiller
   module Task
     # The Option class to implement rototiller command Option handling
     #   via a RototillerTask's #add_command and Command's #add_option
-    #   contains information about a Switch's state, as influenced by environment variables, for instance
+    #   contains information about a Switch's state, eg: as influenced by environment variables
     # @since v1.0.0
     # @attr [String] name The name of the option to add to a command string
     # @api public
@@ -23,24 +23,21 @@ module Rototiller
       # @option args [String] :message A message describing the use of argument
       #
       # for block {|a| ... }
-      # @yield [a] Optional block syntax allows you to specify information about the argument, available methods match hash keys
+      # @yield [a] Optional block syntax allows you to specify information about the argument,
+      #   available methods match hash keys
       # @api public
       def add_argument(*args, &block)
         raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
         if block_given?
-          @arguments.push(Argument.new(&block))
+          add_argument_block(&block)
         else
-          args.each do |arg| # we can accept an array of hashes, each of which defines a param
-            error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError, error_string unless arg.is_a?(Hash)
-            @arguments.push(Argument.new(arg))
-          end
+          add_argument_hash(*args)
         end
       end
 
       # The string representation of this EnvVar; the value on the system, or nil
-      # @return [String] current value of this Option and its argument, based upon itself, defaults and environment variables
-      #   used to form the complete, runable command string
+      # @return [String] current value of this Option and its argument, based upon itself,
+      #   defaults and environment variables used to form the complete, runable command string
       # @api public
       def to_str
         [@name.to_s, @arguments.to_s].compact.join(" ")
@@ -61,6 +58,23 @@ module Rototiller
       def stop
         return true if @arguments.stop?
         return true unless @name
+      end
+
+      private
+
+      # @api private
+      def add_argument_block(&block)
+        @arguments.push(Argument.new(&block))
+      end
+
+      # @api private
+      def add_argument_hash(*args)
+        args.each do |arg| # we can accept an array of hashes, each of which defines a param
+          error_string = "#{__method__} takes an Array of Hashes. \
+              Received Array of: '#{arg.class}'"
+          raise ArgumentError, error_string unless arg.is_a?(Hash)
+          @arguments.push(Argument.new(arg))
+        end
       end
     end
   end

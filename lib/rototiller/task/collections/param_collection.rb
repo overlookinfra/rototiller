@@ -2,15 +2,16 @@ require "forwardable"
 
 module Rototiller
   module Task
-    # The base ParamCollection class to collect more than one parameter for a task, or other parameters
-    #   delegates to Array for most of Array's methods
+    # The base ParamCollection class to collect more than one parameter for a task,
+    #   or other parameters. delegates to Array for most of Array's methods
     # @api public
     # @example ParamCollection.new
     # @since v0.1.0
     class ParamCollection
       extend Forwardable
 
-      def_delegators :@collection, :clear, :delete_if, :include?, :include, :inspect, :each, :[], :map, :any?, :compact
+      def_delegators :@collection, :clear, :delete_if, :include?, :include,
+                     :inspect, :each, :[], :map, :any?, :compact
 
       # setup the collection as a composed Array
       # @api public
@@ -60,10 +61,12 @@ module Rototiller
       private
 
       # @api private
+      # rubocop:disable Style/Next
       def check_classes(allowed_klass, *args)
         args.each do |arg|
           unless arg.is_a?(allowed_klass)
-            argument_error = "Argument was of class #{arg.class}, Can only be of class #{allowed_klass}"
+            argument_error = "Argument was of class #{arg.class}, \
+            Can only be of class #{allowed_klass}"
             raise(ArgumentError, argument_error)
           end
         end

@@ -14,6 +14,7 @@ module Rototiller
     # @attr [String] name The name of the command to run
     # @attr_reader [Struct] result A structured command result
     #    contains members: output, exit_code and pid
+    # rubocop:disable Metrics/ClassLength
     class Command < RototillerParam
       # this command's name (as specified by user)
       # @return [String] the command to be used, could be considered a default
@@ -53,7 +54,8 @@ module Rototiller
       # @example command.add_env({:name => "MYENV"})
       #
       # for block {|a| ... }
-      # @yield [a] Optional block syntax allows you to specify information about the environment variable, available methods match hash keys described above
+      # @yield [a] Optional block syntax allows you to specify information about the
+      #   environment variable, available methods match hash keys described above
       # @return [Env] object
       def add_env(*args, &block)
         raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
@@ -66,17 +68,16 @@ module Rototiller
         else
           # TODO: test this with array and non-array single hash
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
-            error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError, error_string unless arg.is_a?(Hash)
+            validate_hash_param_arg(arg)
             # send in the name of this Param, so it can be used when no default is given to add_env
-            arg[:parent_name] = @name
-            @env_vars.push(EnvVar.new(arg))
+            @env_vars.push(EnvVar.new({ parent_name: @name }.merge(arg)))
           end
         end
         @name = @env_vars.last if @env_vars.last
       end
 
-      # adds switch(es) (binary option flags) to this Command instance with optional env_var overrides
+      # adds switch(es) (binary option flags) to this Command instance with
+      #   optional env_var overrides
       # @param [Hash] args hashes of information about the switch
       # @option args [String] :name The switch string, including any '-', '--', etc
       # @option args [String] :message A message describing the use of this variable
@@ -84,7 +85,8 @@ module Rototiller
       # @api public
       # @example command.add_switch({:name => "--myswitch"})
       # for block {|a| ... }
-      # @yield [a] Optional block syntax allows you to specify information about the environment variable, available methods match hash keys described above
+      # @yield [a] Optional block syntax allows you to specify information about the
+      #   environment variable, available methods match hash keys described above
       # @return [Switch] object
       def add_switch(*args, &block)
         raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
@@ -96,8 +98,7 @@ module Rototiller
         else
           # TODO: test this with array and non-array single hash
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
-            error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError, error_string unless arg.is_a?(Hash)
+            validate_hash_param_arg(arg)
             @switches.push(Switch.new(arg))
           end
         end
@@ -112,7 +113,8 @@ module Rototiller
       # @api public
       # @example command.add_option({:name => "--myoption"})
       # for block {|a| ... }
-      # @yield [a] Optional block syntax allows you to specify information about the option, available methods match hash keys
+      # @yield [a] Optional block syntax allows you to specify information about the option,
+      #   available methods match hash keys
       # @return [Option] object
       def add_option(*args, &block)
         raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
@@ -124,8 +126,7 @@ module Rototiller
         else
           # TODO: test this with array and non-array single hash
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
-            error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError, error_string unless arg.is_a?(Hash)
+            validate_hash_param_arg(arg)
             @options.push(Option.new(arg))
           end
         end
@@ -140,7 +141,8 @@ module Rototiller
       # @api public
       # @example command.add_argument({:name => "myargument"})
       # for block {|a| ... }
-      # @yield [a] Optional block syntax allows you to specify information about the option, available methods match hash keys
+      # @yield [a] Optional block syntax allows you to specify information about the option,
+      #   available methods match hash keys
       # @return [Argument] object
       def add_argument(*args, &block)
         raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
@@ -148,8 +150,7 @@ module Rototiller
           @arguments.push(Argument.new(&block))
         else
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
-            error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError, error_string unless arg.is_a?(Hash)
+            validate_hash_param_arg(arg)
             @arguments.push(Argument.new(arg))
           end
         end
@@ -178,45 +179,9 @@ module Rototiller
       # @example command.run
       # TODO make private method? so that it will throw an error if yielded to?
       def run
-        # make this look a bit like beaker's result class
-        #   we may have to convert this to a class if it gets complex
-        @result = Result.new
-        @result.output = ""
+        setup_process_and_thread
 
-        read_pipe, write_pipe = IO.pipe
-        begin
-          @result.pid = Process.spawn(to_str, out: write_pipe, err: write_pipe)
-        rescue Errno::ENOENT => e
-          $stderr.puts e
-          @result.output << e.to_s
-          @result.exit_code = 127
-          raise
-        end
-        # create a thread that monitors the process and tells us when it is done
-        @exitstatus = :not_done
-        Thread.new do
-          Process.wait(@result.pid)
-          @exitstatus       = $CHILD_STATUS.exitstatus
-          @result.exit_code = @exitstatus
-          write_pipe.close
-        end
-
-        # FIXME: monitor for deadlock?
-        while @exitstatus == :not_done
-          begin
-            # readpartial will read UP to amount given
-            # we should never really need 64k, but it makes the responsiveness
-            #   of our output much better when something is really quickly spewing output
-            sixty_four_k = 65_536
-            this_read = read_pipe.readpartial(sixty_four_k)
-          rescue EOFError
-            next
-          end
-          @result.output << this_read
-          $stdout.sync = true # print stuff right away
-          print this_read
-          sleep 0.001
-        end
+        read_print_until_process_done
 
         yield @result if block_given? # if block, send result to the block
         @result
@@ -257,6 +222,66 @@ module Rototiller
       # @api private
       def delete_nil_empty_false(arg)
         arg.delete_if { |i| [nil, "", false].include?(i) }
+      end
+
+      # @api private
+      def setup_process_vars
+        # make this look a bit like beaker's result class
+        #   we may have to convert this to a class if it gets complex
+        @result = Result.new
+        @result.output = ""
+        @read_pipe, @write_pipe = IO.pipe
+      end
+
+      # @api private
+      def setup_process_and_thread
+        setup_process_vars
+        begin
+          @result.pid = Process.spawn(to_str, out: @write_pipe, err: @write_pipe)
+        rescue Errno::ENOENT => e
+          $stderr.puts e
+          @result.output << e.to_s
+          @result.exit_code = 127
+          raise
+        end
+        setup_thread
+      end
+
+      # @api private
+      def setup_thread
+        # create a thread that monitors the process and tells us when it is done
+        @exitstatus = :not_done
+        Thread.new do
+          Process.wait(@result.pid)
+          @exitstatus       = $CHILD_STATUS.exitstatus
+          @result.exit_code = @exitstatus
+          @write_pipe.close
+        end
+      end
+
+      # @api private
+      def store_print_process_lines(this_read)
+        @result.output << this_read
+        print this_read
+      end
+
+      SIXTY_FOUR_K = 65_536
+      # @api private
+      def read_print_until_process_done
+        # FIXME: monitor for deadlock?
+        $stdout.sync = true # print stuff right away
+        while @exitstatus == :not_done
+          begin
+            # readpartial will read UP to amount given
+            # we should never really need 64k, but it makes the responsiveness
+            #   of our output much better when something is really quickly spewing output
+            this_read = @read_pipe.readpartial(SIXTY_FOUR_K)
+          rescue EOFError
+            next
+          end
+          store_print_process_lines(this_read)
+          sleep 0.001
+        end
       end
     end
   end

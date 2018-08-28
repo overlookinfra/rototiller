@@ -14,7 +14,8 @@ module Rototiller
       # FIXME: make fail_on_error per-command
       attr_accessor :fail_on_error
 
-      # create a task object with rototiller helper methods for building commands and creating debug/log messaging
+      # create a task object with rototiller helper methods for building commands and creating
+      #   debug/log messaging
       # see the rake-task documentation on things other than {.add_command} and {.add_env}
       # @param *args [Array<String>] same args as a rake task: a name, other dependent tasks
       # @yield block describing the RototillerTask including calls to our methods
@@ -33,7 +34,8 @@ module Rototiller
 
       # define_task is included to allow task to work like Rake::Task
       # using .define_task or .new as appropriate
-      # sort of private. it's needed by Rake. it should work fine, just not the *good* way to create a RototillerTask
+      # sort of private. it's needed by Rake. it should work fine, just not the *good* way to
+      #   create a RototillerTask
       # @api private
       def self.define_task(*args, &task_block)
         new(*args, &task_block)
@@ -46,7 +48,8 @@ module Rototiller
       # @option args [String] :message A message describing the use of this variable
       #
       # for block {|a| ... }
-      # @yield [a] Optional block syntax allows you to specify information about the environment variable, available methods match hash keys
+      # @yield [a] Optional block syntax allows you to specify information about the
+      #   environment variable, available methods match hash keys
       # @api public
       # @example task.add_env({:name => "SOMENV"})
       def add_env(*args, &block)
@@ -59,8 +62,7 @@ module Rototiller
         else
           # TODO: test this with array and non-array single hash
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
-            error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError, error_string unless arg.is_a?(Hash)
+            validate_hash_param_arg(arg)
             @env_vars.push(EnvVar.new(arg))
           end
         end
@@ -69,28 +71,28 @@ module Rototiller
       # adds command to be executed by task
       # @param [Hash] args hash of information about the command to be executed
       # @option arg [String] :name The command to be executed
-      # @option arg [String] :override_env An environment variable used to override the command to be executed by the task
+      # @option arg [String] :override_env An environment variable used to override the command to
+      #   be executed by the task
       #
       # for block {|a| ... }
-      # @yield [a] Optional block syntax allows you to specify information about command, available methods match hash keys
+      # @yield [a] Optional block syntax allows you to specify information about command,
+      #   available methods match hash keys
       # @api public
       # @example task.add_command({:name => "echo i echo stuff"})
       def add_command(*args, &block)
         raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
         if block_given?
-          new_command = Command.new(&block)
-          @commands.push(new_command)
+          @commands.push(Command.new(&block))
         else
           args.each do |arg| # we can accept an array of hashes, each of which defines a param
-            error_string = "#{__method__} takes an Array of Hashes. Received Array of: '#{arg.class}'"
-            raise ArgumentError, error_string unless arg.is_a?(Hash)
-            new_command = Command.new(arg)
-            @commands.push(new_command)
+            validate_hash_param_arg(arg)
+            @commands.push(Command.new(arg))
           end
         end
-        # because add_command is at the top of the hierarchy chain, it has to return its produced object
-        #   otherwise we yield on the blocks inside and don't have add_env that can handle an Array of hashes.
-        new_command
+        # because add_command is at the top of the hierarchy chain,
+        #   it has to return its produced object otherwise we yield on the blocks inside and
+        #   don't have add_env that can handle an Array of hashes.
+        @commands[-1] # FIXME: we should probably delegate param_collection#last
       end
 
       private
@@ -114,15 +116,18 @@ module Rototiller
       def run_task
         puts @env_vars.messages
         stop_task?
+        run_commands
+        @commands.map(&:result)
+      end
+
+      # @api private
+      def run_commands
         @commands.each do |command|
           #print command and messages at top
           puts command
           puts command.message
 
-          begin
-            command.run
-          rescue Errno::ENOENT => e
-          end
+          run_command(command)
           command_failed = command.result.exit_code > 0
 
           if command_failed
@@ -133,8 +138,18 @@ module Rototiller
             exit command.result.exit_code if fail_on_error
           end
         end
-        # might be useful in output of t.add_command()?  but if not, Command has #result
-        @commands.map(&:result)
+      end
+
+      # @api private
+      # rubocop:disable Style/RedundantBegin
+      #   is this cop broken?
+      # rubocop:disable Lint/HandleExceptions
+      #   FIXME: we crush command exceptions here, on purpose so we can handle them elsewhere
+      def run_command(command)
+        begin
+          command.run
+        rescue Errno::ENOENT
+        end
       end
 
       # register the new block w/ run_task call in a rake task
@@ -144,7 +159,9 @@ module Rototiller
       def define(args, &task_block)
         # Default task description
         # can be overridden with standard 'desc' DSL method
-        desc "RototillerTask: A Task with optional environment-variable and command-flag tracking" unless ::Rake.application.last_description
+        unless ::Rake.application.last_description
+          desc "RototillerTask: A Task with optional environment-variable and command-flag tracking"
+        end
 
         task(@name, *args) do |_, task_args|
           RakeFileUtils.__send__(:verbose, @verbose) do
@@ -156,8 +173,16 @@ module Rototiller
 
       #   for unit testing, we need a shortcut around rake's CLI --verbose
       # @api private
-      def set_verbose(verbosity = true)
+      def make_verbose(verbosity = true)
         @verbose = verbosity
+      end
+
+      ARG_ERROR_SUBSTR = "takes an Array of Hashes. Received Array of:".freeze
+      # @api private
+      def validate_hash_param_arg(arg)
+        calling_method_name = caller_locations(1, 1)[0].label
+        error_string = "#{calling_method_name} #{ARG_ERROR_SUBSTR} '#{arg.class}'"
+        raise ArgumentError, error_string unless arg.is_a?(Hash)
       end
     end
   end

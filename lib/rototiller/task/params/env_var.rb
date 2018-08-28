@@ -8,14 +8,18 @@ module Rototiller
     #   The rototiller Param using it knows what to do with its value.
     # @since v0.1.0
     # @api public
-    # @attr [String]         default  The default value of this env_var to use. if we have a default and
-    #   the system ENV does not have a value this implies the env_var is not required. If not default is specified but the parent parameter has a `#name` then that name is used as the default.
+    # @attr default [String] The default value of this env_var to use.
+    #   If we have a default and the system ENV does not have a value this implies the env_var
+    #   is not required. If not default is specified but the parent parameter has a `#name` then
+    #   that name is used as the default.
     #   Used internally by CommandFlag, ignored for standalone EnvVar.
-    # @attr_reader [Boolean] stop     Whether the state of the EnvVar requires the task to stop
-    # @attr_reader [Boolean] value    The value of the ENV based on specified default and environment state
+    # @attr_reader stop [Boolean] Whether the state of the EnvVar requires the task to stop
+    # @attr_reader value [Boolean] The value of the ENV based on specified default and
+    #   environment state
     class EnvVar < RototillerParam
       include Rototiller::ColorText
-      STATUS = { nodefault_noexist: 0, nodefault_exist: 1, default_noexist: 2, default_exist: 3 }.freeze
+      STATUS = { nodefault_noexist: 0, nodefault_exist: 1,
+                 default_noexist:   2, default_exist:   3 }.freeze
 
       # this env_var's name (as specified by user)
       # @return [String] the env_var itself
@@ -110,13 +114,17 @@ module Rototiller
 
         if @name
           @value = ENV[@name] || @default
-          unless env_value_provided_by_user?
-            ENV[@name] = @value
-            @env_value_set_by_us = true
-          end
+          set_user_env unless env_value_provided_by_user?
         else
           @value = @default
         end
+      end
+
+      # @api private
+      # set the actual user environment with the env var value
+      def set_user_env
+        ENV[@name] = @value
+        @env_value_set_by_us = true
       end
 
       # @api private
@@ -126,11 +134,44 @@ module Rototiller
       end
 
       # @api private
+      # rubocop:disable Metrics/CyclomaticComplexity
       def env_status
         return STATUS[:nodefault_noexist] if !@default &&  @env_value_set_by_us
         return STATUS[:nodefault_exist]   if !@default && !@env_value_set_by_us
         return STATUS[:default_noexist]   if  @default &&  @env_value_set_by_us
         return STATUS[:default_exist]     if  @default && !@env_value_set_by_us
+      end
+
+      # @api private
+      def nodefault_noexist_message
+        this_message = ""
+        this_message << red_text("ERROR: environment-variable not set and no default provided: ")
+        this_message << "'#{@name}': '#{@message}'\n"
+      end
+
+      # @api private
+      # rubocop:disable Style/LineEndConcatenation
+      def nodefault_exist_message
+        this_message = ""
+        this_message << yellow_text("INFO: using system environment-variable value, " +
+                                    "no default provided: ")
+        this_message << "'#{@name}': '#{@value}': '#{@message}'\n"
+      end
+
+      # @api private
+      def default_noexist_message
+        this_message = ""
+        this_message << green_text("INFO: no system environment-variable value, " +
+                                   "using default provided: ")
+        this_message << "'#{@name}': '#{@value}': '#{@message}'\n"
+      end
+
+      # @api private
+      def default_exist_message
+        this_message = ""
+        this_message << yellow_text("INFO: environment-variable overridden from system, " +
+                                    "not using default: ")
+        this_message << "'#{@name}': default: '#{@default}' using: '#{@value}': '#{@message}'\n"
       end
     end
   end

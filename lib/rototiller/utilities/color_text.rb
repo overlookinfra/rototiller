@@ -1,4 +1,5 @@
 module Rototiller
+  # methods to colorize text in (ba)sh, etc
   module ColorText
     # Colors a string of text
     # @param text [String] the text to color

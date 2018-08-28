@@ -157,7 +157,7 @@ something --myoption optionarg --myargument
 
       context "verbose and fail_on_error" do
         def described_verbose(verbose)
-          task.__send__(:set_verbose, verbose)
+          task.__send__(:make_verbose, verbose)
         end
         it "prints command failed" do
           if Gem::Version.new(RUBY_VERSION) < Gem::Version.new("2.0.0")

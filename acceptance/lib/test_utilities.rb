@@ -1,13 +1,8 @@
+# a bunch of utilities for acceptance testing with beaker
 module TestUtilities
   def random_string
     # used in task names, don't put numbers in me
     [*("a".."z")].sample(8).join
-  end
-
-  def set_random_env_on(host)
-    name = unique_env_on(host)
-    host.add_env_var(name, random_string)
-    name
   end
 
   def unique_env_on(host)
@@ -26,25 +21,14 @@ module TestUtilities
   end
 
   def execute_task_on(host, task_name = nil, rakefile_path = nil, opts = {})
-    if opts[:accept_all_exit_codes]
-      step "Execute task '#{task_name}'"
-    else
-      step "Execute task '#{task_name}', ensure success"
-    end
-
+    print_test_step(task_name, opts)
     command = "rake #{task_name}"
     command += " --verbose" if opts[:verbose]
     command += " --rakefile #{rakefile_path}" if rakefile_path
-    on(host, command, opts) do |result|
-      unless opts[:accept_all_exit_codes]
-        acceptable_exit_codes = opts[:acceptable_exit_codes] || 0
-        acceptable_exit_codes = [acceptable_exit_codes] unless acceptable_exit_codes.is_a?(Array)
-        assert(acceptable_exit_codes.include?(result.exit_code), "Unexpected exit code: #{result.exit_code}")
-        assert_no_match(/error/i, result.output, "An unexpected error was observed: '#{result.output}'")
-      end
-      yield result if block_given?
-      return result
-    end
+    result = on(host, command, opts)
+    validate_task_results(result, opts) unless opts[:accept_all_exit_codes]
+    yield result if block_given?
+    result
   end
 
   RESERVED_KEYS = %i[block_syntax env_value exists type].freeze
@@ -54,5 +38,30 @@ module TestUtilities
       hash.delete(key)
     end
     hash
+  end
+
+  private
+
+  # @api private
+  def print_test_step(task_name, opts)
+    if opts[:accept_all_exit_codes]
+      step "Execute task '#{task_name}'"
+    else
+      step "Execute task '#{task_name}', ensure success"
+    end
+  end
+
+  # @api private
+  def validate_task_results(result, opts)
+    assert(acceptable_exit_codes(opts).include?(result.exit_code),
+           "Unexpected exit code: #{result.exit_code}")
+    assert_no_match(/error/i, result.output,
+                    "An unexpected error was observed: '#{result.output}'")
+  end
+
+  # @api private
+  def acceptable_exit_codes(opts)
+    acceptable_exit_codes = opts[:acceptable_exit_codes] || 0
+    [acceptable_exit_codes].flatten
   end
 end

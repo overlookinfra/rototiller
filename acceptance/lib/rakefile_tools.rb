@@ -18,11 +18,11 @@ module RakefileTools
     segment = ""
     segment_configs.each do |this_segment|
       add_type = add_env_vars(this_segment)
-      if this_segment[:block_syntax]
-        segment << create_block_segment(this_segment, add_type)
-      else
-        segment << create_hash_segment(this_segment, add_type)
-      end
+      segment << if this_segment[:block_syntax]
+                   create_block_segment(this_segment, add_type)
+                 else
+                   create_hash_segment(this_segment, add_type)
+                 end
     end
     segment
   end
@@ -99,23 +99,20 @@ module RakefileTools
 
     def add_method(method, value)
       block = ""
-      if list_of_allowed_methods.include?(method.to_s) # can take a block
-        analyzed = analyze(value)
-        if analyzed.keep_as_hash
-          block << add_method_with_hash_signature(method, value)
-        else
-          block << add_method_with_block_signature(method, value)
-        end
-      else
-        block << set_param(method, value)
-      end
-      block
+      block << if list_of_allowed_methods.include?(method.to_s) # can take a block
+                 if analyze(value).keep_as_hash
+                   add_method_with_hash_signature(method, value)
+                 else
+                   add_method_with_block_signature(method, value)
+                 end
+               else
+                 set_param(method, value)
+               end
     end
 
     def to_s
       @body.to_s
     end
-
 
     # use as a call back to look inside nested hashes
     AnalyzedHash = Struct.new(:keep_as_hash, :hash)

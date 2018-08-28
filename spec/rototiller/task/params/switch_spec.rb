@@ -1,9 +1,11 @@
 require "spec_helper"
 
 module Rototiller
+  # rubocop:disable Metrics/ModuleLength
   module Task
     # use each of these for the objects passed from it_behaves_like below
     #   (each of switch from hash and from block)
+    # rubocop:disable Metrics/BlockLength
     shared_examples "a Switch object" do
       before(:each) do
         # stub out all the PRY env use, or the mocks for ENV below will break pry
@@ -22,11 +24,15 @@ module Rototiller
         allow(ENV).to receive(:[]).with("TERM").and_return(term)
         allow(ENV).to receive(:[]).with("PAGER").and_return(pager)
         allow(ENV).to receive(:[]).with("LINES").and_return(lines)
-        allow(ENV).to receive(:[]).with("BUNDLE_MAJOR_DEPRECATIONS").and_return(bundle_major_deprecations)
+        allow(ENV).to receive(:[]).with("BUNDLE_MAJOR_DEPRECATIONS")
+                                  .and_return(bundle_major_deprecations)
 
         @switch_name = random_string
         @args = { name: @switch_name, message: "killer message" }
-        @block = proc { |b| b.name = @switch_name; b.message = "killer message" }
+        @block = proc do |b|
+          b.name = @switch_name
+          b.message = "killer message"
+        end
       end
 
       describe "#name" do

@@ -1,9 +1,11 @@
 require "spec_helper"
 
 module Rototiller
+  # rubocop:disable Metrics/ModuleLength
   module Task
     # use each of these for the objects passed from it_behaves_like below
     #   (each of option from hash and from block)
+    # rubocop:disable Metrics/BlockLength
     shared_examples "a Option object" do
       before(:each) do
         # stub out all the PRY env use, or the mocks for ENV below will break pry
@@ -24,8 +26,13 @@ module Rototiller
 
         @option_name = random_string
         @argument_name = random_string
-        @args = { name: @option_name, add_argument: { name: @argument_name }, message: "killer message" }
-        @block = proc { |b| b.name = @option_name; b.add_argument(name: @argument_name); b.message = "killer message" }
+        @args = { name: @option_name, add_argument: { name: @argument_name },
+                  message: "killer message" }
+        @block = proc do |b|
+          b.name = @option_name
+          b.add_argument(name: @argument_name)
+          b.message = "killer message"
+        end
       end
 
       describe "#name" do

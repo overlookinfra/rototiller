@@ -2,6 +2,7 @@ require "spec_helper"
 
 module Rototiller
   module Task
+    # rubocop:disable Metrics/BlockLength
     describe OptionCollection do
       context "#allowed_class" do
         it "allows only Options" do

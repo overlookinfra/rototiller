@@ -2,19 +2,36 @@ require "spec_helper"
 
 module Rototiller
   module Task
+    # rubocop:disable Metrics/BlockLength
     describe ParamCollection do
       before do
         allow_any_instance_of(ParamCollection).to receive(:allowed_class).and_return(EnvVar)
       end
-      let(:param_collection)              { ParamCollection.new }
-      let(:set_env_1_with_default)        { EnvVar.new(name: set_random_env, message: "description", default: "devault value") }
-      let(:set_env_2_with_default)        { EnvVar.new(name: set_random_env, message: "description", default: "devault value") }
-      let(:unset_env_1_with_default)      { EnvVar.new(name: unique_env, message: "description", default: "devault value") }
-      let(:unset_env_2_with_default)      { EnvVar.new(name: unique_env, message: "description", default: "devault value") }
-      let(:set_env_1_no_default)          { EnvVar.new(name: set_random_env, message: "description") }
-      let(:set_env_2_no_default)          { EnvVar.new(name: set_random_env, message: "description") }
-      let(:unset_env_1_no_default)        { EnvVar.new(name: unique_env, message: "description") }
-      let(:unset_env_2_no_default)        { EnvVar.new(name: unique_env, message: "description") }
+      let(:param_collection)         { ParamCollection.new }
+      let(:set_env_1_no_default)     { EnvVar.new(name: set_random_env, message: "description") }
+      let(:set_env_2_no_default)     { EnvVar.new(name: set_random_env, message: "description") }
+      let(:unset_env_1_no_default)   { EnvVar.new(name: unique_env, message: "description") }
+      let(:unset_env_2_no_default)   { EnvVar.new(name: unique_env, message: "description") }
+      let(:set_env_1_with_default) do
+        EnvVar.new(name: set_random_env,
+                   message: "description",
+                   default: "devault value")
+      end
+      let(:set_env_2_with_default) do
+        EnvVar.new(name: set_random_env,
+                   message: "description",
+                   default: "devault value")
+      end
+      let(:unset_env_1_with_default) do
+        EnvVar.new(name: unique_env,
+                   message: "description",
+                   default: "devault value")
+      end
+      let(:unset_env_2_with_default) do
+        EnvVar.new(name: unique_env,
+                   message: "description",
+                   default: "devault value")
+      end
 
       context "#push" do
         it "adds a single ENV" do
@@ -27,7 +44,10 @@ module Rototiller
         end
 
         it "adds multiple ENVs" do
-          expect { param_collection.push(set_env_1_no_default, unset_env_1_with_default, set_env_1_with_default) }.not_to raise_error
+          expect do
+            param_collection.push(set_env_1_no_default, unset_env_1_with_default,
+                                  set_env_1_with_default)
+          end.not_to raise_error
           expect(param_collection).to include(set_env_1_no_default)
           expect(param_collection).to include(unset_env_1_with_default)
           expect(param_collection).to include(set_env_1_with_default)

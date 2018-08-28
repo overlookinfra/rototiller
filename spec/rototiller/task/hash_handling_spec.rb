@@ -1,6 +1,7 @@
 require "spec_helper"
 require "rototiller/task/hash_handling"
 
+# rubocop:disable Metrics/BlockLength
 describe Rototiller::Task::HashHandling do
   before(:all) do
     class FakeParam
@@ -11,6 +12,7 @@ describe Rototiller::Task::HashHandling do
         send_hash_keys_as_methods_to_self(args)
       end
 
+      # rubocop:disable Style/TrivialAccessors
       def add_env(arg)
         @add_env = arg
       end
@@ -31,6 +33,6 @@ describe Rototiller::Task::HashHandling do
 
   it "should raise an error if method does not exist" do
     args = { nosuch: "baz" }
-    expect { FakeParam.new(args) }.to raise_error { |error| expect(error).to be_a(ArgumentError) }
+    expect { FakeParam.new(args) }.to(raise_error { |error| expect(error).to be_a(ArgumentError) })
   end
 end

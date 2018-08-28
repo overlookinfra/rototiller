@@ -2,18 +2,19 @@ require "spec_helper"
 
 module Rototiller
   module Task
+    # rubocop:disable Metrics/BlockLength
     describe EnvVar do
       %w[with_default without_default].each do |has_default|
         context has_default do
           ["ENV set", "ENV not set"].each do |env_set|
             context env_set do
-              let (:message_header) { "The environment variable:" }
-
               before(:each) do
                 @var_name      = "VARNAME_#{(0...8).map { (65 + rand(26)).chr }.join}"
                 @var_message   = "This is how you use #{@var_name}"
                 @var_env_value = "VARENVVALUE_#{(0...8).map { (65 + rand(26)).chr }.join}"
-                @var_default   = has_default == "with_default" ? "VARDEFAULT_#{(0...8).map { (65 + rand(26)).chr }.join}" : nil
+                @var_default   = if has_default == "with_default"
+                                   "VARDEFAULT_#{(0...8).map { (65 + rand(26)).chr }.join}"
+                                 end
                 ENV[@var_name] = @var_env_value if env_set == "ENV set"
 
                 # args = [var_name, var_message]
@@ -72,7 +73,8 @@ module Rototiller
 
       it "errors when no name is provided" do
         no_name = { default: "default value", message: "This is the message" }
-        expect { described_class.new(no_name) }.to raise_error(ArgumentError, "A name must be supplied to add_env")
+        expect { described_class.new(no_name) }.to raise_error(ArgumentError,
+                                                               "A name must be supplied to add_env")
       end
     end
   end

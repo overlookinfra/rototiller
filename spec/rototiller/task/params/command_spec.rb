@@ -1,9 +1,11 @@
 require "spec_helper"
 
 module Rototiller
+  # rubocop:disable Metrics/ModuleLength
   module Task
     # use each of these for the objects passed from it_behaves_like below
     #   (each of command from hash and command from block
+    # rubocop:disable Metrics/BlockLength
     shared_examples "a Command object" do
       before(:each) do
         # stub out all the PRY env use, or the mocks for ENV below will break pry
@@ -29,8 +31,13 @@ module Rototiller
         @arg_name      = "VARNAME_#{(0...8).map { (65 + rand(26)).chr }.join}"
         @command_name  = "echo"
         # FIXME: refactor these so we better do blocks vs hashes
-        @args = { name: @command_name, add_argument: { name: @arg_name }, message: "killer message" }
-        @block = proc { |b| b.name = @command_name; b.add_argument(name: @arg_name); b.message = "killer message" }
+        @args = { name: @command_name, add_argument: { name: @arg_name },
+                  message: "killer message" }
+        @block = proc do |b|
+          b.name = @command_name
+          b.add_argument(name: @arg_name)
+          b.message = "killer message"
+        end
       end
 
       describe "#name" do
@@ -66,7 +73,11 @@ module Rototiller
         end
         context "with a block" do
           it "runs the block" do
-            expect { command.run { |result| puts "my exit_code: '#{result.exit_code}'" } }.to output(/#{@arg_name}\nmy exit_code: '0'\n$/).to_stdout
+            expect do
+              command.run do |result|
+                puts "my exit_code: '#{result.exit_code}'"
+              end
+            end.to output(/#{@arg_name}\nmy exit_code: '0'\n$/).to_stdout
           end
         end
       end

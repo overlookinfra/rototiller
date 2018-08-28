@@ -19,16 +19,19 @@ GemOf::LintTasks.new
 task test: :'test:unit'
 task acceptance: :'test:acceptance'
 
+# rubocop:disable Metrics/BlockLength
 namespace :test do
   desc "Run unit tests"
   rototiller_task :unit do |t|
-    t.add_env({:name => 'CI', :default => 'false', :message => 'Are we in CI? If so, unit tests run in the container'})
-    t.add_env({:name => 'RAKE_VER',     :default => DEFAULT_RAKE_VER,  :message => 'The rake version to use when running unit tests'})
-    if ENV['CI'] && ENV['CI'] != 'false'
+    t.add_env(name: "CI", default: "false",
+              message: "Are we in CI? If so, unit tests run in the container")
+    t.add_env(name: "RAKE_VER", default: DEFAULT_RAKE_VER,
+              message: "The rake version to use when running unit tests")
+    if ENV["CI"] && ENV["CI"] != "false"
       Rake::Task["container:update_and_start"].execute
       t.add_command do |command|
         command.name = "docker exec --interactive `#{LATEST_CONTAINER}`"
-        # use options here so they come out in order (arguments would go on the end after all options
+        # use options here so they come out in order (arguments would go on end after all options)
         command.add_option(name: '/bin/bash -l -c "')
         command.add_option(name: "bundle update &&")
         command.add_option(name: "bundle exec rspec --color --format documentation")
@@ -70,7 +73,8 @@ namespace :test do
       # start sshd for beaker
       #   we have to specify group to bundle update or it fails, sometimes??
       command.add_option(name: "/usr/sbin/sshd && bundle update &&")
-      command.add_option(name: "bundle exec beaker --debug --no-ntp --repo-proxy --no-validate --no-provision")
+      command.add_option(name: "bundle exec beaker --debug --no-ntp --repo-proxy " \
+                               "--no-validate --no-provision")
       command.add_option do |option|
         option.name = "--keyfile"
         option.message = "the beaker ssh id/keyfile"
@@ -149,7 +153,9 @@ namespace :container do
     t.add_command(name: "docker ps --latest")
   end
 
-  desc "push docker container for tests to Puppet Container Registry. You need to be logged into it first `docker login -u TOKEN --password <token from pcr> pcr-internal.puppet.net`"
+  desc "push docker container for tests to Puppet Container Registry. " \
+       "You need to be logged into it first `docker login -u TOKEN " \
+       "--password <token from pcr> pcr-internal.puppet.net`"
   rototiller_task :push do |t|
     t.add_command do |command|
       command.name = "docker push"

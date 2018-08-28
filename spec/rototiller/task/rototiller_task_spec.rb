@@ -52,47 +52,29 @@ module Rototiller
         # FIXME: damnit, where is this extra newline coming from?
         #   i'm pretty sure it's the way we're printing (with puts) empty messages from Command or EnvVar
         #it "doesn't have spurious newlines" do
-          #expect{ described_run_task }.not_to output(anything).to_stdout
+        #expect{ described_run_task }.not_to output(anything).to_stdout
         #end
-
-        it "creates a default description with '#{init_method}'" do
-          expect(task_named).to receive(:run_task) { true } unless init_method == :define_task
-          # FIXME: WHY does define_task not appear to work here (works in acceptance)
-          expect(Rake.application.invoke_task("task_name")).to be_an(Array) unless init_method == :define_task
-          # this will fail if previous tests don't adequately clear the desc stack
-          # http://apidock.com/ruby/v1_9_3_392/Rake/TaskManager/get_description
-          expect(Rake.application.last_description).to eq "RototillerTask: A Task with optional environment-variable and command-flag tracking"
-        end
-        # TODO: override comment
-        it "doesn't say last_comment is deprecated '#{init_method}'" do
-          expect { described_run_task }.not_to output(/\[DEPRECATION\] `last_comment`/).to_stdout
-        end
 
         context "with a name passed to the '#{init_method}' constructor" do
           task_named = described_class.send(init_method, :task_name)
           # using the let, spews the system call on stdout??
           # let(:task_named) { described_class.send(init_method,:task_name) }
 
-          it "correctly sets the name" do
-            expect(task_named.name).to eq :task_name
-          end
-
           it "creates a default description with '#{init_method}'" do
             expect(task_named).to receive(:run_task) { true } unless init_method == :define_task
             # FIXME: WHY does define_task not appear to work here (works in acceptance)
-            unless init_method == :define_task
-              expect(Rake.application.invoke_task("task_name"))
-                .to be_an(Array)
-            end
+            expect(Rake.application.invoke_task("task_name")).to be_an(Array) unless init_method == :define_task
             # this will fail if previous tests don't adequately clear the desc stack
             # http://apidock.com/ruby/v1_9_3_392/Rake/TaskManager/get_description
-            expect(Rake.application.last_description)
-              .to eq "RototillerTask: A Task with optional environment-variable and " \
-            "command-flag tracking"
+            expect(Rake.application.last_description).to eq "RototillerTask: A Task with optional environment-variable and command-flag tracking"
           end
           # TODO: override comment
           it "doesn't say last_comment is deprecated '#{init_method}'" do
             expect { described_run_task }.not_to output(/\[DEPRECATION\] `last_comment`/).to_stdout
+          end
+
+          it "correctly sets the name" do
+            expect(task_named.name).to eq :task_name
           end
         end
 
@@ -215,7 +197,7 @@ something --myoption optionarg --myargument
               expect { described_run_task }
                 .to output(/No such file or directory - exit 2/).to_stderr
             else
-              expect { described_run_task }.to output("\n\n").to_stderr
+              expect { described_run_task }.to output("\n").to_stderr
             end
           end
         end
@@ -233,22 +215,23 @@ something --myoption optionarg --myargument
           end
         end
 
-        context "#add_env" do
-          let(:env_name) { unique_env }
-          let(:env_desc) { "used in some task for some purpose" }
-          # TODO: add expect to raise with other case, if possible
-          it "raises argument error for too many env string args" do
-            expect { task.add_env("-t", "-t description", "tvalue2", "someother") }
-              .to raise_error(ArgumentError)
-          end
-          it "add_env can take 4 EnvVar args" do
-            task.add_env({ name: env_name, message: env_desc }, { name: "VAR2", message: env_desc },
-                         { name: "VAR3", message: env_desc }, name: env_name, message: env_desc)
-            expect(task).to receive(:exit)
-            expected_substr = "environment-variable not set and no default provided"
-            expect { described_run_task }
-              .to output(/ERROR: #{expected_substr}:.*#{env_name}.*#{env_desc}.*VAR2.*VAR3.*/m)
-              .to_stdout
+        # confined to 'new' init method, dirty test env (rspec--)
+        if (init_method == :new)
+          context "name default relationship" do
+            it "uses the name when there is no default" do
+              validation = "I_AM_THE_NAME"
+              command = { name: "echo #{validation}", add_env: { name: "FOOBAR" } }
+              task.add_command(command)
+              expect { described_run_task }.to output(/#{validation}/).to_stdout
+            end
+
+            it "prefers the default over the name" do
+              validation = "I_AM_THE_DEFAULT"
+              command = { name: "echo I_AM_THE_NAME",
+                          add_env: { name: "FOOBAR", default: "echo #{validation}" } }
+              task.add_command(command)
+              expect { described_run_task }.to output(/#{validation}/).to_stdout
+            end
           end
         end
       end
@@ -270,23 +253,6 @@ something --myoption optionarg --myargument
         end
       end
 
-      # confined to 'new' init method, dirty test env (rspec--)
-      context "name default relationship", if: (init_method == :new) do
-        it "uses the name when there is no default" do
-          validation = "I_AM_THE_NAME"
-          command = { name: "echo #{validation}", add_env: { name: "FOOBAR" } }
-          task.add_command(command)
-          expect { described_run_task }.to output(/#{validation}/).to_stdout
-        end
-
-        it "prefers the default over the name" do
-          validation = "I_AM_THE_DEFAULT"
-          command = { name: "echo I_AM_THE_NAME",
-                      add_env: { name: "FOOBAR", default: "echo #{validation}" } }
-          task.add_command(command)
-          expect { described_run_task }.to output(/#{validation}/).to_stdout
-        end
-      end
     end
   end
 end

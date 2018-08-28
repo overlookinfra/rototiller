@@ -13,6 +13,8 @@ slv/rototiller:
     # something in here (docker probably) is reading from stdin
     #   this prevents subsequent steps from running (acceptance doesn't run)
     #   so we need the </dev/null :facepalm:
+      - echo "rake lint:rubocop" </dev/null
+    - rake lint:rubocop </dev/null
     - echo "rake test:unit" </dev/null
     - rake test:unit </dev/null
     - echo "rake test:acceptance" </dev/null

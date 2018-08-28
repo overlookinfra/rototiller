@@ -36,7 +36,7 @@ module Rototiller
       # @api public
       # @example puts mycollection.messages
       # @return [String] messages from the contents of this ParamCollection
-      def messages(indent=0)
+      def messages(indent = 0)
         @collection.map { |param| param.message(indent) }.join("")
       end
 

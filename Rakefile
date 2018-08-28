@@ -36,13 +36,13 @@ namespace :test do
         command.add_option(name: "bundle update &&")
         command.add_option(name: "bundle exec rspec --color --format documentation")
         command.add_option do |option|
-          option.name = '--pattern'
+          option.name = "--pattern"
           option.add_argument do |arg|
             arg.name = "spec/**/*_spec.rb"
-            arg.add_env({:name => 'SPEC_PATTERN', :message => "rspec files to test pattern"})
+            arg.add_env(name: "SPEC_PATTERN", message: "rspec files to test pattern")
           end
         end
-        command.add_argument({:name => '"'})
+        command.add_argument(name: '"')
       end
       t.add_command(name: "docker stop `#{LATEST_CONTAINER}` && docker rm `#{LATEST_CONTAINER}`")
     else
@@ -50,10 +50,10 @@ namespace :test do
         # command.name = "bundle exec rspec --color --format documentation"
         command.name = "bundle exec rspec --color --format documentation"
         command.add_option do |option|
-          option.name = '--pattern'
+          option.name = "--pattern"
           option.add_argument do |arg|
             arg.name = "spec/**/*_spec.rb"
-            arg.add_env({:name => 'SPEC_PATTERN', :message => "rspec files to test pattern"})
+            arg.add_env(name: "SPEC_PATTERN", message: "rspec files to test pattern")
           end
         end
       end

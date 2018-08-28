@@ -45,13 +45,9 @@ module Rototiller
           @env_vars.push(EnvVar.new({ parent_name: @name }, &block))
         else
           # TODO: test this with array and non-array single hash
-          args.each do |arg| # we can accept an array of hashes, each of which defines a param
-            validate_hash_param_arg(arg)
-            # send in the name of this Param, so it can be used when no default is given to add_env
-            arg[:parent_name] = @name
-            @env_vars.push(EnvVar.new(arg))
-          end
+          add_hash_env(args)
         end
+        # our name is the value of the last env_var, if there is one
         @name = @env_vars.last if @env_vars.last
       end
 
@@ -64,8 +60,8 @@ module Rototiller
 
       # @return [String] formatted messages from all of Switch's pieces
       #   itself, env_vars
-      def message(indent=0)
-        return [ @env_vars.messages(indent) ].join ""
+      def message(indent = 0)
+        [@env_vars.messages(indent)].join ""
       end
 
       # The string representation of this Switch; the value sent by author, or
@@ -75,6 +71,18 @@ module Rototiller
         @name.to_s
       end
       alias to_s to_str
+
+      private
+
+      # @api private
+      def add_hash_env(args)
+        args.each do |arg| # we can accept an array of hashes, each of which defines a param
+          validate_hash_param_arg(arg)
+          # send in the name of this Param, so it can be used when no default is given to add_env
+          arg[:parent_name] = @name
+          @env_vars.push(EnvVar.new(arg))
+        end
+      end
     end
   end
 end

@@ -28,17 +28,20 @@ module Rototiller
                 @expected_var_default = nil if has_default == "without_default"
 
                 # validation
-                if (has_default == 'with_default' && env_set == 'ENV not set')
-                  @formatted_message = "\e[32m[I] \e[0m'#{@var_name}': using default: '#{@var_default}'; '#{@var_message}'"
+                if has_default == "with_default" && env_set == "ENV not set"
+                  @formatted_message = "\e[32m[I] \e[0m'#{@var_name}': using default: " \
+                    "'#{@var_default}'; '#{@var_message}'"
                   @expected_stop = false
-                elsif (has_default == 'without_default' && env_set == 'ENV not set')
+                elsif has_default == "without_default" && env_set == "ENV not set"
                   @formatted_message = "\e[31m[E] required: \e[0m'#{@var_name}'; '#{@var_message}'"
                   @expected_stop = true
-                elsif (has_default == 'with_default' && env_set == 'ENV set')
-                  @formatted_message = "\e[33m[I] \e[0m'#{@var_name}': using system: '#{@var_env_value}', default: '#{@var_default}'; '#{@var_message}'"
+                elsif has_default == "with_default" && env_set == "ENV set"
+                  @formatted_message = "\e[33m[I] \e[0m'#{@var_name}': using system: " \
+                    "'#{@var_env_value}', default: '#{@var_default}'; '#{@var_message}'"
                   @expected_stop = false
-                elsif (has_default == 'without_default' && env_set == 'ENV set')
-                  @formatted_message = "\e[33m[I] \e[0m'#{@var_name}': using system: '#{@var_env_value}', no default; '#{@var_message}'"
+                elsif has_default == "without_default" && env_set == "ENV set"
+                  @formatted_message = "\e[33m[I] \e[0m'#{@var_name}': using system: " \
+                    "'#{@var_env_value}', no default; '#{@var_message}'"
                   @expected_stop = false
                 end
               end

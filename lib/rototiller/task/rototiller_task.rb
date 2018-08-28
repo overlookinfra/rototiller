@@ -105,11 +105,10 @@ module Rototiller
 
       # @api private
       def stop_task?
-        if @env_vars.stop? || @commands.stop?
-          $stderr.puts @commands.messages
-          exit_code = 1
-          exit exit_code
-        end
+        return unless @env_vars.stop? || @commands.stop?
+        $stderr.puts @commands.messages
+        exit_code = 1
+        exit exit_code
       end
 
       # @api private
@@ -123,21 +122,23 @@ module Rototiller
       # @api private
       def run_commands
         @commands.each do |command|
-          #print command and messages at top
+          # print command and messages at top
           puts command
           puts command.message
 
           run_command(command)
           command_failed = command.result.exit_code > 0
-
-          if command_failed
-            #print command and messages at bottom, if failed
-            puts command
-            $stderr.puts "  '#{command}' failed" if @verbose
-            $stderr.puts command.message
-            exit command.result.exit_code if fail_on_error
-          end
+          print_failed_and_exit(command) if command_failed
         end
+      end
+
+      # @api private
+      def print_failed_and_exit(command)
+        # print command and messages at bottom, if failed
+        puts command
+        $stderr.puts "  '#{command}' failed with exit code: #{command.result.exit_code}" if @verbose
+        $stderr.puts command.message
+        exit command.result.exit_code if fail_on_error
       end
 
       # @api private

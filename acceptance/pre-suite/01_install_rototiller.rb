@@ -7,8 +7,9 @@ test_name "install rototiller" do
     # fun
     # get the gemname from the output of gem build
     #   find the row with /File/, de-array, split on space, de-array again
-    # previous attempts of just looking at the filesystem and infering the latest gem can break easily
-    gem_name = built_gem_info.split("\n").select { |a| a =~ /File/}.first.split.last
+    # previous attempts of just looking at the filesystem and
+    # infering the latest gem can break easily
+    gem_name = built_gem_info.split("\n").select { |a| a =~ /File/ }.first.split.last
   end
   teardown do
     `rm #{gem_name}`

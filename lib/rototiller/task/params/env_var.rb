@@ -60,27 +60,20 @@ module Rototiller
 
       # The formatted messages about this EnvVar's status to be displayed to the user
       # @param indent [String] how far to indent each message
-      # @return [String] the EnvVar's message, formatted for color and meaningful to the state of the EnvVar
+      # @return [String] the EnvVar's message, formatted for color and meaningful to state of EnvVar
       # @api public
-      INDENT_ARRAY = ["","  "]
-      def message(indent=0)
+      def message(indent = 0)
         # INDENT_ARRAY above, only supports to 1
         #   it turns out we really only want one level of indents
-        raise ArgumentError.new(indent) if indent > 1
-        this_message = String.new
-
+        raise ArgumentError(indent) if indent > 1
         if env_status    == STATUS[:nodefault_noexist]
-          this_message << INDENT_ARRAY[ indent ] + red_text('[E] required: ')
-          this_message << "'#{@name}'; '#{@message}'\n"
+          nodefault_noexist_message(indent)
         elsif env_status == STATUS[:nodefault_exist]
-          this_message << INDENT_ARRAY[ indent ] + yellow_text('[I] ')
-          this_message << "'#{@name}': using system: '#{@value}', no default; '#{@message}'\n"
+          nodefault_exist_message(indent)
         elsif env_status == STATUS[:default_noexist]
-          this_message << INDENT_ARRAY[ indent ] + green_text('[I] ')
-          this_message << "'#{@name}': using default: '#{@value}'; '#{@message}'\n"
+          default_noexist_message(indent)
         elsif env_status == STATUS[:default_exist]
-          this_message << INDENT_ARRAY[ indent ] + yellow_text('[I] ')
-          this_message << "'#{@name}': using system: '#{@value}', default: '#{@default}'; '#{@message}'\n"
+          default_exist_message(indent)
         end
       end
 
@@ -135,6 +128,7 @@ module Rototiller
 
       # @api private
       # rubocop:disable Metrics/CyclomaticComplexity
+      #   divide this into 4 more methods?  my ass
       def env_status
         return STATUS[:nodefault_noexist] if !@default &&  @env_value_set_by_us
         return STATUS[:nodefault_exist]   if !@default && !@env_value_set_by_us
@@ -142,36 +136,28 @@ module Rototiller
         return STATUS[:default_exist]     if  @default && !@env_value_set_by_us
       end
 
+      INDENT_ARRAY = ["", "  "].freeze
       # @api private
-      def nodefault_noexist_message
-        this_message = ""
-        this_message << red_text("ERROR: environment-variable not set and no default provided: ")
-        this_message << "'#{@name}': '#{@message}'\n"
+      def nodefault_noexist_message(indent)
+        INDENT_ARRAY[indent] + red_text("[E] required: ") + "'#{@name}'; '#{@message}'\n"
       end
 
       # @api private
-      # rubocop:disable Style/LineEndConcatenation
-      def nodefault_exist_message
-        this_message = ""
-        this_message << yellow_text("INFO: using system environment-variable value, " +
-                                    "no default provided: ")
-        this_message << "'#{@name}': '#{@value}': '#{@message}'\n"
+      def nodefault_exist_message(indent)
+        INDENT_ARRAY[indent] + yellow_text("[I] ") +
+          "'#{@name}': using system: '#{@value}', no default; '#{@message}'\n"
       end
 
       # @api private
-      def default_noexist_message
-        this_message = ""
-        this_message << green_text("INFO: no system environment-variable value, " +
-                                   "using default provided: ")
-        this_message << "'#{@name}': '#{@value}': '#{@message}'\n"
+      def default_noexist_message(indent)
+        INDENT_ARRAY[indent] + green_text("[I] ") +
+          "'#{@name}': using default: '#{@value}'; '#{@message}'\n"
       end
 
       # @api private
-      def default_exist_message
-        this_message = ""
-        this_message << yellow_text("INFO: environment-variable overridden from system, " +
-                                    "not using default: ")
-        this_message << "'#{@name}': default: '#{@default}' using: '#{@value}': '#{@message}'\n"
+      def default_exist_message(indent)
+        INDENT_ARRAY[indent] + yellow_text("[I] ") +
+          "'#{@name}': using system: '#{@value}', default: '#{@default}'; '#{@message}'\n"
       end
     end
   end

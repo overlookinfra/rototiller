@@ -203,17 +203,15 @@ module Rototiller
       # @api public
       # @example puts command.message
       # TODO make private method? so that it will throw an error if yielded to?
-      def message(indent=0)
-        return_message = String.new
-        if @message && @message != ""
-          return_message = "  #{@message}\n"
-        end
-        number_of_indents = 1
-        return [return_message,
-                @env_vars.messages(indent=number_of_indents),
-                @switches.messages(indent=number_of_indents),
-                @options.messages(indent=number_of_indents),
-                @arguments.messages(indent=number_of_indents),
+      def message(indent = 1)
+        return_message = ""
+        return_message = "  #{@message}\n" if @message && @message != ""
+        [
+          return_message,
+          @env_vars.messages(indent),
+          @switches.messages(indent),
+          @options.messages(indent),
+          @arguments.messages(indent)
         ].join("")
       end
 

@@ -50,10 +50,10 @@ module Rototiller
         end
 
         # FIXME: damnit, where is this extra newline coming from?
-        #   i'm pretty sure it's the way we're printing (with puts) empty messages from Command or EnvVar
-        #it "doesn't have spurious newlines" do
-        #expect{ described_run_task }.not_to output(anything).to_stdout
-        #end
+        #   i'm pretty sure it's the way we're printing empty messages from Command or EnvVar
+        # it "doesn't have spurious newlines" do
+        #   expect{ described_run_task }.not_to output(anything).to_stdout
+        # end
 
         context "with a name passed to the '#{init_method}' constructor" do
           task_named = described_class.send(init_method, :task_name)
@@ -63,10 +63,14 @@ module Rototiller
           it "creates a default description with '#{init_method}'" do
             expect(task_named).to receive(:run_task) { true } unless init_method == :define_task
             # FIXME: WHY does define_task not appear to work here (works in acceptance)
-            expect(Rake.application.invoke_task("task_name")).to be_an(Array) unless init_method == :define_task
+            unless init_method == :define_task
+              expect(Rake.application.invoke_task("task_name"))
+                .to be_an(Array)
+            end
             # this will fail if previous tests don't adequately clear the desc stack
             # http://apidock.com/ruby/v1_9_3_392/Rake/TaskManager/get_description
-            expect(Rake.application.last_description).to eq "RototillerTask: A Task with optional environment-variable and command-flag tracking"
+            expect(Rake.application.last_description).to eq "RototillerTask: A Task with " \
+              "optional environment-variable and command-flag tracking"
           end
           # TODO: override comment
           it "doesn't say last_comment is deprecated '#{init_method}'" do
@@ -101,27 +105,29 @@ module Rototiller
         end
 
         # can't use the task.add_env stuff below with define_task
-        if (init_method == :new)
-          it 'correctly indents messages' do
-            task.add_env({:name => "TASKENVVAR", :default => "somevalue", :message => "task env message"})
-            c = task.add_command({:name =>  'echo something', :message => "command message"})
-            c.add_env({:name => 'SOMEENVVAR', :message => "command env message"})
+        if init_method == :new
+          it "correctly indents messages" do
+            task.add_env(name: "TASKENVVAR", default: "somevalue", message: "task env message")
+            c = task.add_command(name: "echo something", message: "command message")
+            c.add_env(name: "SOMEENVVAR", message: "command env message")
             c.add_argument do |a|
-              a.name = '--myargument'
+              a.name = "--myargument"
               a.message = "argument message"
-              a.add_env({:name => 'ARGENV', :message => "args env message"})
+              a.add_env(name: "ARGENV", message: "args env message")
             end
             c.add_option do |o|
-              o.name = '--myoption'
+              o.name = "--myoption"
               o.message = "option message"
-              o.add_env({:name => 'OPTENV', :message => "option env message"})
+              o.add_env(name: "OPTENV", message: "option env message")
               o.add_argument do |a|
-                a.name = 'optionarg'
+                a.name = "optionarg"
                 a.message = "option argument message"
-                a.add_env({:name => 'OPTARGENV', :message => "options args env message"})
+                a.add_env(name: "OPTARGENV", message: "options args env message")
               end
             end
-            #FIXME: wth is this extra newline? see other test above as well
+            # FIXME: wth is this extra newline? see other test above as well
+            # rubocop:disable Layout/IndentHeredoc
+            #   a cop with a required 3rd party dep? F the F off
             expected_output = <<-HERE
 \e[32m[I] \e[0m'TASKENVVAR': using default: 'somevalue'; 'task env message'
 echo something --myoption optionarg --myargument
@@ -216,7 +222,10 @@ something --myoption optionarg --myargument
         end
 
         # confined to 'new' init method, dirty test env (rspec--)
-        if (init_method == :new)
+        # rubocop:disable Style/Next
+        #   using next here would get messy if someone wants to easily add tests to the end of this
+        #   block
+        if init_method == :new
           context "name default relationship" do
             it "uses the name when there is no default" do
               validation = "I_AM_THE_NAME"
@@ -241,18 +250,18 @@ something --myoption optionarg --myargument
         let(:env_desc) { "used in some task for some purpose" }
         # TODO: add expect to raise with other case, if possible
         it "raises argument error for too many env string args" do
-          expect { task.add_env("-t", "-t description", "tvalue2", "someother") }.to raise_error(ArgumentError)
+          expect { task.add_env("-t", "-t description", "tvalue2", "someother") }
+            .to raise_error(ArgumentError)
         end
         it "add_env can take 4 EnvVar args" do
           task.add_env({ name: env_name, message: env_desc }, { name: "VAR2", message: env_desc },
                        { name: "VAR3", message: env_desc }, name: env_name, message: env_desc)
           expect(task).to receive(:exit)
-          expect{ described_run_task }
+          expect { described_run_task }
             .to output(/\[E\] required: .*#{env_name}.*#{env_desc}.*VAR2.*VAR3.*/m)
             .to_stdout
         end
       end
-
     end
   end
 end

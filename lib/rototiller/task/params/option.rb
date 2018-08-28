@@ -46,9 +46,9 @@ module Rototiller
       # @return [String] formatted messages from all of Switch's pieces
       #   itself, env_vars
       # @api public
-      def message(indent=0)
+      def message(indent = 0)
         return_message = [@env_vars.messages(indent), @arguments.messages(indent)].join ""
-        return_message += "\n" unless return_message == ""
+        return_message + "\n" unless return_message == ""
       end
 
       # Does this param require the task to stop

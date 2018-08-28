@@ -6,6 +6,7 @@ test_name "can add multiple commands in a RototillerTask" do
   extend Beaker::Hosts
   extend RakefileTools
   extend TestUtilities
+  tag "risk:high" # multiple commands are easy to break in tiller
 
   test_name     = File.basename(__FILE__, ".*")
   @task_name    = test_name

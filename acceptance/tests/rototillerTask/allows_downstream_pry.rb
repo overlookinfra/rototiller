@@ -7,6 +7,7 @@ test_name "allows pry/interaction in rototiller_task subprocess command" do
   extend Beaker::Hosts
   extend RakefileTools
   extend TestUtilities
+  tag "risk:high" # output buffering and IO handling, oh my!
 
   test_name     = File.basename(__FILE__, ".*")
   @task_name    = test_name

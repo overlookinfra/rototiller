@@ -108,6 +108,10 @@ module RakefileTools
                else
                  set_param(method, value)
                end
+      # this MUST be here, even though it shouldn't have to be
+      #  otherwise tests with blocks or hashes can fail because ruby doesn't really
+      #  return the output of the conditional (2.4)
+      block
     end
 
     def to_s

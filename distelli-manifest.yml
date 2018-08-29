@@ -8,6 +8,8 @@ slv/rototiller:
     - docker pull pcr-internal.puppet.net/slv/rototiller:latest
     - echo "gem install rototiller"
     - gem install rototiller
+    - git submodule init
+    - git submodule update
 
   Build:
     # something in here (docker probably) is reading from stdin

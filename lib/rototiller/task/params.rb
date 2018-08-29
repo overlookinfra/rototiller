@@ -13,8 +13,6 @@ module Rototiller
 
       # @api public
       attr_accessor :name
-      # @api public
-      attr_accessor :parent_name
 
       # we must always have a message that can be aggregated via the parent params
       # @api public

@@ -74,6 +74,10 @@ module Rototiller
         end
       end
 
+      it "sets its value to parent's name when no default given" do
+        no_name = { name: "my_super_cool_name", parent_name: "parentParamName" }
+        expect(described_class.new(no_name).message).to match(/default: 'parentParamName'/)
+      end
       it "errors when no name is provided" do
         no_name = { default: "default value", message: "This is the message" }
         expect { described_class.new(no_name) }.to raise_error(ArgumentError,

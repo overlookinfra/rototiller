@@ -37,6 +37,10 @@ module Rototiller
       # should we stop because a required env var is not set?
       # @return [Boolean] stop?
       attr_reader   :stop
+      # @api public
+      # store value of parent param so we can set our default value to it, if none given
+      #   only EnvVars need this
+      attr_accessor :parent_name
 
       # Creates a new instance of EnvVar, holds information about the ENV in the environment
       # @param [Hash, Array<Hash>] args hash of information about the environment variable

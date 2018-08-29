@@ -48,9 +48,7 @@ module Rototiller
       # @return EnvVar object
       def initialize(args = {})
         @parent_name = args[:parent_name]
-        @message ||= args[:parent_message]
         args.delete(:parent_name)
-        args.delete(:parent_message)
         block_given? ? (yield self) : send_hash_keys_as_methods_to_self(args)
 
         raise(ArgumentError, "A name must be supplied to add_env") unless @name

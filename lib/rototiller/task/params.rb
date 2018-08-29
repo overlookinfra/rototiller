@@ -17,8 +17,6 @@ module Rototiller
       attr_accessor :message
       # @api public
       attr_accessor :parent_name
-      # @api public
-      attr_accessor :parent_message
 
       # we must always have a message that can be aggregated via the parent params
       # @api public
@@ -27,22 +25,6 @@ module Rototiller
       def message
         ""
       end
-
-      # @api public
-      # @example param.parent_name = other_param.name
-      # @return [void]
-      def parent_name=(name)
-        name.each_char do |char|
-          message = "You have defined an environment variable with an illegal character: #{char}"
-          raise ArgumentError, message unless char =~ /[a-zA-Z]|\d|_/
-        end
-        @parent_name = name
-      end
-
-      # @api public
-      # @example param.parent_message = other_param.message
-      # @return [void]
-      attr_writer :parent_message
 
       private
 

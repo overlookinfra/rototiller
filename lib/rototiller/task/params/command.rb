@@ -24,6 +24,11 @@ module Rototiller
       # @return [Struct] the command results, if run
       attr_reader :result
 
+      # @api public
+      # @example command.message = "my command's message"
+      #   the reader is defined below
+      attr_writer :message
+
       # Creates a new instance of Command, holds information about desired state of a command
       # @param [Hash,Array<Hash>] args hashes of information about the command
       # for block { |b| ... }

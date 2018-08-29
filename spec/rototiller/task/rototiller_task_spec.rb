@@ -112,16 +112,13 @@ module Rototiller
             c.add_env(name: "SOMEENVVAR", message: "command env message")
             c.add_argument do |a|
               a.name = "--myargument"
-              a.message = "argument message"
               a.add_env(name: "ARGENV", message: "args env message")
             end
             c.add_option do |o|
               o.name = "--myoption"
-              o.message = "option message"
               o.add_env(name: "OPTENV", message: "option env message")
               o.add_argument do |a|
                 a.name = "optionarg"
-                a.message = "option argument message"
                 a.add_env(name: "OPTARGENV", message: "options args env message")
               end
             end

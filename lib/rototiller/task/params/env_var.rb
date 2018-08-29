@@ -28,8 +28,9 @@ module Rototiller
       # @return [String] the env_var's default value if none in system
       attr_accessor :default
       # this env_var's message (as specified by user)
-      # @return [String] the env_var's message
-      attr_accessor :message
+      # @example command.message = "my command's message"
+      #   the reader is defined below
+      attr_writer :message
       # this env_var's value
       # @return [String] the env_var's value
       attr_reader   :value

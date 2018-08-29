@@ -28,10 +28,9 @@ module Rototiller
                                   .and_return(bundle_major_deprecations)
 
         @switch_name = random_string
-        @args = { name: @switch_name, message: "killer message" }
+        @args = { name: @switch_name }
         @block = proc do |b|
           b.name = @switch_name
-          b.message = "killer message"
         end
       end
 
@@ -138,6 +137,9 @@ module Rototiller
           switch.add_env(name: "BLAH")
           expect(switch.to_s).to eq("my_shiny_new_switch")
         end
+      end
+      it "fails when trying to set a message on a Switch" do
+        expect{ switch.message="blah" }.to raise_error(NoMethodError)
       end
     end
 

@@ -26,12 +26,10 @@ module Rototiller
 
         @option_name = random_string
         @argument_name = random_string
-        @args = { name: @option_name, add_argument: { name: @argument_name },
-                  message: "killer message" }
+        @args = { name: @option_name, add_argument: { name: @argument_name } }
         @block = proc do |b|
           b.name = @option_name
           b.add_argument(name: @argument_name)
-          b.message = "killer message"
         end
       end
 
@@ -138,6 +136,9 @@ module Rototiller
           option.add_env(name: "BLAH")
           expect(option.to_str).to eq("my_shiny_new_option #{@argument_name}")
         end
+      end
+      it "fails when trying to set a message on an Option" do
+        expect{ option.message="blah" }.to raise_error(NoMethodError)
       end
     end
 

@@ -44,8 +44,9 @@ module Rototiller
         @arguments     = ArgumentCollection.new
 
         block_given? ? (yield self) : send_hash_keys_as_methods_to_self(args)
-        # @name is the default unless @env_vars returns something truthy
-        (@name = @env_vars.last) if @env_vars.last
+
+        # do this after we have done the rest of init, so @name can be re-set
+        set_command_name_from_our_env_vars
       end
 
       # adds environment variables to be tracked, messaged.
@@ -78,7 +79,8 @@ module Rototiller
             @env_vars.push(EnvVar.new({ parent_name: @name }.merge(arg)))
           end
         end
-        @name = @env_vars.last if @env_vars.last
+        #   do this every time a new env_var is created (thus here)
+        set_command_name_from_our_env_vars
       end
 
       # adds switch(es) (binary option flags) to this Command instance with
@@ -221,6 +223,14 @@ module Rototiller
       end
 
       private
+
+      # @api private
+      # our name/value is the value of the last env_var set, if any
+      # FIXME: this should be abstracted into a parent class above RototillerParam
+      #   this is used only, but in both of command and switch.
+      def set_command_name_from_our_env_vars
+        @name = @env_vars.last if @env_vars.last
+      end
 
       # @api private
       def delete_nil_empty_false(arg)

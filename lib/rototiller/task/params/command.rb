@@ -2,6 +2,7 @@ require "rototiller/task/collections/env_collection"
 require "rototiller/task/collections/switch_collection"
 require "rototiller/task/collections/option_collection"
 require "rototiller/task/collections/argument_collection"
+require "rototiller/utilities/color_text"
 require "English"
 
 module Rototiller
@@ -16,6 +17,7 @@ module Rototiller
     #    contains members: output, exit_code and pid
     # rubocop:disable Metrics/ClassLength
     class Command < RototillerParam
+      include Rototiller::ColorText
       # this command's name (as specified by user)
       # @return [String] the command to be used, could be considered a default
       attr_accessor :name
@@ -212,7 +214,8 @@ module Rototiller
       # TODO make private method? so that it will throw an error if yielded to?
       def message(indent = 1)
         return_message = ""
-        return_message = "  #{@message}\n" if @message && @message != ""
+        return_message = "  " + green_text("with message: ") +
+          "#{@message}\n" if @message && @message != ""
         [
           return_message,
           @env_vars.messages(indent),

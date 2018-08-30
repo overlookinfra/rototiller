@@ -127,8 +127,8 @@ module Rototiller
             #   a cop with a required 3rd party dep? F the F off
             expected_output = <<-HERE
 \e[32m[I] \e[0m'TASKENVVAR': using default: 'somevalue'; 'task env message'
-echo something --myoption optionarg --myargument
-  command message
+\e[32mrunning: \e[0mecho something --myoption optionarg --myargument
+  \e[32mwith message: \e[0mcommand message
   \e[32m[I] \e[0m'SOMEENVVAR': using default: 'echo something'; 'command env message'
   \e[32m[I] \e[0m'OPTENV': using default: '--myoption'; 'option env message'
   \e[32m[I] \e[0m'OPTARGENV': using default: 'optionarg'; 'options args env message'

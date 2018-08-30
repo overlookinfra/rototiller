@@ -1,5 +1,6 @@
 require "rototiller/task/collections/env_collection"
 require "rototiller/task/collections/command_collection"
+require "rototiller/utilities/color_text"
 require "rake/tasklib"
 
 module Rototiller
@@ -10,6 +11,7 @@ module Rototiller
     # @attr [Boolean] fail_on_error Whether or not to fail Rake when an error
     #   occurs (typically when examples fail). Defaults to `true`.
     class RototillerTask < ::Rake::TaskLib
+      include Rototiller::ColorText
       attr_reader :name
       # FIXME: make fail_on_error per-command
       attr_accessor :fail_on_error
@@ -117,7 +119,7 @@ module Rototiller
       def run_commands
         @commands.each do |command|
           # print command and messages at top
-          puts command
+          puts green_text("running: ") + command
           puts command.message
 
           run_command(command)

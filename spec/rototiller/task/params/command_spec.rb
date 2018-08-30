@@ -192,6 +192,12 @@ module Rototiller
       it_behaves_like "a Command object" do
         let(:command)  { described_class.new(&@block) }
       end
+      it "can call its methods on a previously stored instance" do
+        command = described_class.new(name: "meh")
+        my_message = "my late-added message, yo"
+        command.message = my_message
+        expect(command.message).to eq("  \e[32mwith message: \e[0mmy late-added message, yo" + "\n")
+      end
     end
   end
 end

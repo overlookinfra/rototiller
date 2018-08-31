@@ -85,15 +85,12 @@ module Rototiller
       end
       it "errors when invalid name is provided" do
         this_env = { name: "bad-env1" }
-        #expect { described_class.new(this_env) }.to raise_error(ArgumentError, "You have defined " \
         expect { described_class.new(this_env) }.to raise_error(ArgumentError,
                                                                 /illegal character: -/)
         this_env = { name: "bad#env" }
-        #expect { described_class.new(this_env) }.to raise_error(ArgumentError, "You have defined " \
         expect { described_class.new(this_env) }.to raise_error(ArgumentError,
                                                                 /illegal character: #/)
         this_env = { name: "$badenv" }
-        #expect { described_class.new(this_env) }.to raise_error(ArgumentError, "You have defined " \
         expect { described_class.new(this_env) }.to raise_error(ArgumentError,
                                                                 /illegal character: \$/)
       end

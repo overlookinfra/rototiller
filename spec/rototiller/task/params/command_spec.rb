@@ -178,6 +178,7 @@ module Rototiller
       end
 
       describe "#message" do
+        # FIXME: we should probably integrate the color handling in here
         it "returns the formatted message" do
           @formatted_message = "  \e[32mwith message: \e[0mkiller message"
           expect(command.message).to eq(@formatted_message + "\n")

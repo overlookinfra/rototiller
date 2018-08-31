@@ -139,7 +139,7 @@ module Rototiller
         end
       end
       it "fails when trying to set a message on a Switch" do
-        expect{ switch.message="blah" }.to raise_error(NoMethodError)
+        expect { switch.message = "blah" }.to raise_error(NoMethodError)
       end
     end
 

@@ -214,8 +214,8 @@ module Rototiller
       # TODO make private method? so that it will throw an error if yielded to?
       def message(indent = 1)
         return_message = ""
-        return_message = "  " + green_text("with message: ") + "#{@message}\n" if @message &&
-                                                                                  @message != ""
+        return_message = "  #{green_text('with message: ')}#{@message}\n" if @message &&
+                                                                             @message != ""
         [
           return_message,
           @env_vars.messages(indent),

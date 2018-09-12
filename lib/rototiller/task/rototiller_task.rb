@@ -98,12 +98,6 @@ module Rototiller
       private
 
       # @api private
-      def print_messages
-        puts @commands.messages
-        puts @env_vars.messages
-      end
-
-      # @api private
       def stop_task?
         return unless @env_vars.stop? || @commands.stop?
         $stderr.puts @commands.messages

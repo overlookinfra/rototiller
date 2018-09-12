@@ -1,39 +1,37 @@
 if ENV["COVERAGE"]
-  require 'simplecov'
+  require "simplecov"
   SimpleCov.start do
-    add_filter '/spec/'
-    add_filter '.bundle/gems'
+    add_filter "/spec/"
+    add_filter ".bundle/gems"
   end
 end
 
-require 'rspec'
-require 'rototiller'
+require "rspec"
+require "rototiller"
 
 def random_string
-  (0...10).map { ('a'..'z').to_a[rand(26)] }.join
+  (0...10).map { ("a".."z").to_a[rand(26)] }.join
 end
 
 def set_random_env
   name = unique_env
   ENV[name] = random_string
-  return name
+  name
 end
 
 def unique_env
   env = random_string
-  env = random_string until !ENV[env]
-  return env
+  env = random_string while ENV[env]
+  env
 end
 
 def with_captured_stdout
-  begin
-    old_stdout = $stdout
-    $stdout = StringIO.new('','w')
-    yield
-    $stdout.string
-  ensure
-    $stdout = old_stdout
-  end
+  old_stdout = $stdout
+  $stdout = StringIO.new("", "w")
+  yield
+  $stdout.string
+ensure
+  $stdout = old_stdout
 end
 
 RSpec.configure do |config|

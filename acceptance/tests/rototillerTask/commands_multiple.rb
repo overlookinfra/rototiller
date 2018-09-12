@@ -1,15 +1,16 @@
-require 'beaker/hosts'
-require 'rakefile_tools'
-require 'test_utilities'
+require "beaker/hosts"
+require "rakefile_tools"
+require "test_utilities"
 
-test_name 'can add multiple commands in a RototillerTask' do
+test_name "can add multiple commands in a RototillerTask" do
   extend Beaker::Hosts
   extend RakefileTools
   extend TestUtilities
+  tag "risk:high" # multiple commands are easy to break in tiller
 
-  test_name     = File.basename( __FILE__, ".*" )
+  test_name     = File.basename(__FILE__, ".*")
   @task_name    = test_name
-  step 'Add two commands with hashes' do
+  step "Add two commands with hashes" do
     rakefile_contents = <<-EOS
     #{rototiller_rakefile_header}
 rototiller_task :#{@task_name} do |t|
@@ -20,12 +21,12 @@ end
 
     rakefile_path = create_rakefile_on(sut, rakefile_contents)
     execute_task_on(sut, @task_name, rakefile_path) do |result|
-      assert_match(/^command1/, result.stdout, 'The correct command was not observed')
-      assert_match(/^command2/, result.stdout, 'The correct command was not observed')
+      assert_match(/^command1/, result.stdout, "The correct command was not observed")
+      assert_match(/^command2/, result.stdout, "The correct command was not observed")
     end
   end
 
-  step 'Add two commands with blocks' do
+  step "Add two commands with blocks" do
     rakefile_contents = <<-EOS
     #{rototiller_rakefile_header}
 rototiller_task :#{@task_name} do |t|
@@ -36,12 +37,12 @@ end
 
     rakefile_path = create_rakefile_on(sut, rakefile_contents)
     execute_task_on(sut, @task_name, rakefile_path) do |result|
-      assert_match(/^command1/, result.stdout, 'The correct command was not observed')
-      assert_match(/^command2/, result.stdout, 'The correct command was not observed')
+      assert_match(/^command1/, result.stdout, "The correct command was not observed")
+      assert_match(/^command2/, result.stdout, "The correct command was not observed")
     end
   end
 
-  step 'Add two commands, one block one hash' do
+  step "Add two commands, one block one hash" do
     rakefile_contents = <<-EOS
     #{rototiller_rakefile_header}
 rototiller_task :#{@task_name} do |t|
@@ -52,8 +53,8 @@ end
 
     rakefile_path = create_rakefile_on(sut, rakefile_contents)
     execute_task_on(sut, @task_name, rakefile_path) do |result|
-      assert_match(/^command1/, result.stdout, 'The correct command was not observed')
-      assert_match(/^command2/, result.stdout, 'The correct command was not observed')
+      assert_match(/^command1/, result.stdout, "The correct command was not observed")
+      assert_match(/^command2/, result.stdout, "The correct command was not observed")
     end
   end
 end

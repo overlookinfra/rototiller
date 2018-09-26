@@ -28,14 +28,19 @@ module Rototiller
       # @return [String] the env_var's default value if none in system
       attr_accessor :default
       # this env_var's message (as specified by user)
-      # @return [String] the env_var's message
-      attr_accessor :message
+      # @example command.message = "my command's message"
+      #   the reader is defined below
+      attr_writer :message
       # this env_var's value
       # @return [String] the env_var's value
       attr_reader   :value
       # should we stop because a required env var is not set?
       # @return [Boolean] stop?
       attr_reader   :stop
+      # @api public
+      # store value of parent param so we can set our default value to it, if none given
+      #   only EnvVars need this
+      attr_accessor :parent_name
 
       # Creates a new instance of EnvVar, holds information about the ENV in the environment
       # @param [Hash, Array<Hash>] args hash of information about the environment variable
@@ -48,9 +53,7 @@ module Rototiller
       # @return EnvVar object
       def initialize(args = {})
         @parent_name = args[:parent_name]
-        @message ||= args[:parent_message]
         args.delete(:parent_name)
-        args.delete(:parent_message)
         block_given? ? (yield self) : send_hash_keys_as_methods_to_self(args)
 
         raise(ArgumentError, "A name must be supplied to add_env") unless @name

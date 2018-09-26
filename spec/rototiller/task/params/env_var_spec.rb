@@ -74,10 +74,25 @@ module Rototiller
         end
       end
 
+      it "sets its value to parent's name when no default given" do
+        this_env = { name: "my_super_cool_name", parent_name: "parentParamName" }
+        expect(described_class.new(this_env).message).to match(/default: 'parentParamName'/)
+      end
       it "errors when no name is provided" do
         no_name = { default: "default value", message: "This is the message" }
         expect { described_class.new(no_name) }.to raise_error(ArgumentError,
                                                                "A name must be supplied to add_env")
+      end
+      it "errors when invalid name is provided" do
+        this_env = { name: "bad-env1" }
+        expect { described_class.new(this_env) }.to raise_error(ArgumentError,
+                                                                /illegal character: -/)
+        this_env = { name: "bad#env" }
+        expect { described_class.new(this_env) }.to raise_error(ArgumentError,
+                                                                /illegal character: #/)
+        this_env = { name: "$badenv" }
+        expect { described_class.new(this_env) }.to raise_error(ArgumentError,
+                                                                /illegal character: \$/)
       end
     end
   end

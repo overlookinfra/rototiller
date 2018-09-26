@@ -2,6 +2,7 @@ require "rototiller/task/collections/env_collection"
 require "rototiller/task/collections/switch_collection"
 require "rototiller/task/collections/option_collection"
 require "rototiller/task/collections/argument_collection"
+require "rototiller/utilities/color_text"
 require "English"
 
 module Rototiller
@@ -16,6 +17,7 @@ module Rototiller
     #    contains members: output, exit_code and pid
     # rubocop:disable Metrics/ClassLength
     class Command < RototillerParam
+      include Rototiller::ColorText
       # this command's name (as specified by user)
       # @return [String] the command to be used, could be considered a default
       attr_accessor :name
@@ -23,6 +25,11 @@ module Rototiller
       # this command's result
       # @return [Struct] the command results, if run
       attr_reader :result
+
+      # @api public
+      # @example command.message = "my command's message"
+      #   the reader is defined below
+      attr_writer :message
 
       # Creates a new instance of Command, holds information about desired state of a command
       # @param [Hash,Array<Hash>] args hashes of information about the command
@@ -39,8 +46,9 @@ module Rototiller
         @arguments     = ArgumentCollection.new
 
         block_given? ? (yield self) : send_hash_keys_as_methods_to_self(args)
-        # @name is the default unless @env_vars returns something truthy
-        (@name = @env_vars.last) if @env_vars.last
+
+        # do this after we have done the rest of init, so @name can be re-set
+        set_command_name_from_our_env_vars
       end
 
       # adds environment variables to be tracked, messaged.
@@ -73,7 +81,8 @@ module Rototiller
             @env_vars.push(EnvVar.new({ parent_name: @name }.merge(arg)))
           end
         end
-        @name = @env_vars.last if @env_vars.last
+        #   do this every time a new env_var is created (thus here)
+        set_command_name_from_our_env_vars
       end
 
       # adds switch(es) (binary option flags) to this Command instance with
@@ -205,7 +214,8 @@ module Rototiller
       # TODO make private method? so that it will throw an error if yielded to?
       def message(indent = 1)
         return_message = ""
-        return_message = "  #{@message}\n" if @message && @message != ""
+        return_message = "  #{green_text('with message: ')}#{@message}\n" if @message &&
+                                                                             @message != ""
         [
           return_message,
           @env_vars.messages(indent),
@@ -216,6 +226,14 @@ module Rototiller
       end
 
       private
+
+      # @api private
+      # our name/value is the value of the last env_var set, if any
+      # FIXME: this should be abstracted into a parent class above RototillerParam
+      #   this is used only, but in both of command and switch.
+      def set_command_name_from_our_env_vars
+        @name = @env_vars.last if @env_vars.last
+      end
 
       # @api private
       def delete_nil_empty_false(arg)

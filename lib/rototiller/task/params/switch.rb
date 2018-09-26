@@ -22,7 +22,8 @@ module Rototiller
         # the env_vars that override the name
         @env_vars = EnvCollection.new
         block_given? ? (yield self) : send_hash_keys_as_methods_to_self(args)
-        @name ||= @env_vars.last
+        # do this after we have done the rest of init, so @name can be re-set
+        set_command_name_from_our_env_vars
       end
 
       # adds environment variables to be tracked, messaged.
@@ -47,8 +48,8 @@ module Rototiller
           # TODO: test this with array and non-array single hash
           add_hash_env(args)
         end
-        # our name is the value of the last env_var, if there is one
-        @name = @env_vars.last if @env_vars.last
+        #   do this every time a new env_var is created (thus here)
+        set_command_name_from_our_env_vars
       end
 
       # Does this param require the task to stop
@@ -73,6 +74,14 @@ module Rototiller
       alias to_s to_str
 
       private
+
+      # @api private
+      # our name/value is the value of the last env_var set, if any
+      # FIXME: this should be abstracted into a parent class above RototillerParam
+      #   this is used only, but in both of command and switch.
+      def set_command_name_from_our_env_vars
+        @name = @env_vars.last if @env_vars.last
+      end
 
       # @api private
       def add_hash_env(args)

@@ -178,8 +178,9 @@ module Rototiller
       end
 
       describe "#message" do
+        # FIXME: we should probably integrate the color handling in here
         it "returns the formatted message" do
-          @formatted_message = "  killer message"
+          @formatted_message = "  \e[32mwith message: \e[0mkiller message"
           expect(command.message).to eq(@formatted_message + "\n")
         end
       end
@@ -191,6 +192,12 @@ module Rototiller
       end
       it_behaves_like "a Command object" do
         let(:command)  { described_class.new(&@block) }
+      end
+      it "can call its methods on a previously stored instance" do
+        command = described_class.new(name: "meh")
+        my_message = "my late-added message, yo"
+        command.message = my_message
+        expect(command.message).to eq("  \e[32mwith message: \e[0mmy late-added message, yo" + "\n")
       end
     end
   end

@@ -18,6 +18,7 @@ build/
 ## Documentation cache and generated files:
 /.yardoc/
 /_yardoc/
+/yardstick/
 /doc/*
 # But not this file...
 !/doc/rototiller_class_graph.png

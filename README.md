@@ -63,7 +63,7 @@ this does, _mostly_ the same as below.  but what do the various environment vari
           c.name = 'echo my_sweet_command ${HOME}'
           c.add_env({:name => 'COMMAND_NAME', :message => 'use me to override this command name (`echo my_sweet_command`)'})
           # anti-pattern: this is really an option.  FIXME once add_option is implemented
-          c.add_switch({:name => '--switch ${FOO}', :message => 'echo uses --switch to switch things'})
+          c.add_switch({:name => '--switch ${FOO}'})
           # FYI, add_switch can also take a block and add_env
           # command blocks also have add_option, and add_arg, each of which can add environment variables which override themselves.
           # add_option actually has its own add_arg and each of those have add_env.  so meta

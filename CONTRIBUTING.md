@@ -15,7 +15,9 @@
     ```
 
 * Create a topic branch from where you want to base your work.
-  * This is the `master` branch in the case of rototiller.
+  * Typically you'd stem from the `master` or `stable` branch in the case of rototiller.
+    * `master` holds the versions that contain breaking changes and is reserved for _major_ versions. e..g.: `2.0.0`
+    * `stable` holds the version that contain bug fixes and non-breaking features on top of the most previous major _X_ release. e.g.: `2.1.3`
   * To quickly create a topic branch based on master use `git checkout -b my_contribution master`. Do not work directly on the `master` branch.
 * Make commits of logical _working_ and _functional_ units.
 * Check for unnecessary whitespace with `git diff --check` before committing.

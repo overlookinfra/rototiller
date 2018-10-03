@@ -6,6 +6,9 @@ slv/rototiller:
     - docker login -u TOKEN --password $PCR_TOKEN pcr-internal.puppet.net
     - echo "pulling container image"
     - docker pull pcr-internal.puppet.net/slv/rototiller:latest
+    - echo "gem install rototiller"
+    - git submodule init
+    - git submodule update
     # Check to see if rvm is already installed
     - if [ -a ~/.rvm/scripts/rvm ]; then
     -   echo "rvm exists"
@@ -18,7 +21,7 @@ slv/rototiller:
     - source ~/.rvm/scripts/rvm
     - rvm use 2.4.1
     - gem install bundler
-    - bundle install --without system_tests
+    - bundle install
 
   Build:
     - source ~/.rvm/scripts/rvm
@@ -26,15 +29,11 @@ slv/rototiller:
     # something in here (docker probably) is reading from stdin
     #   this prevents subsequent steps from running (acceptance doesn't run)
     #   so we need the </dev/null :facepalm:
-    - echo "rake docs:verify" </dev/null
-    - bundle exec rake docs:verify
-    - echo "rake lint:flay" </dev/null
-    - bundle exec rake lint:flay
-    #- echo "rake lint:flog" </dev/null
-    #- bundle exec rake lint:flog
-    #- echo "rake lint:rubocop" </dev/null
-    #- bundle exec rake lint:rubocop
-    - echo "rake test:unit" </dev/null
-    - rake test:unit </dev/null
-    - echo "rake test:acceptance" </dev/null
-    - rake test:acceptance </dev/null
+    - echo "bundle exec rake docs:verify" </dev/null
+    - bundle exec rake docs:verify </dev/null
+    - echo "bundle exec rake lint:rubocop" </dev/null
+    - bundle exec rake lint:rubocop </dev/null
+    - echo "bundle exec rake test:unit" </dev/null
+    - bundle exec rake test:unit </dev/null
+    - echo "bundle exec rake test:acceptance" </dev/null
+    - bundle exec rake test:acceptance </dev/null

@@ -7,7 +7,6 @@ slv/rototiller:
     - echo "pulling container image"
     - docker pull pcr-internal.puppet.net/slv/rototiller:latest
     - echo "gem install rototiller"
-    - gem install rototiller
     - git submodule init
     - git submodule update
     # Check to see if rvm is already installed

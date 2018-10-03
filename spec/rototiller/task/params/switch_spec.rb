@@ -1,7 +1,6 @@
 require "spec_helper"
 
 module Rototiller
-  # rubocop:disable Metrics/ModuleLength
   module Task
     # use each of these for the objects passed from it_behaves_like below
     #   (each of switch from hash and from block)
@@ -43,7 +42,6 @@ module Rototiller
           expect(switch.name).to eq(@switch_name)
         end
       end
-
 
       describe "#to_str" do
         it "returns the name" do

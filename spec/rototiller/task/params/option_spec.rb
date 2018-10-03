@@ -1,7 +1,6 @@
 require "spec_helper"
 
 module Rototiller
-  # rubocop:disable Metrics/ModuleLength
   module Task
     # use each of these for the objects passed from it_behaves_like below
     #   (each of option from hash and from block)

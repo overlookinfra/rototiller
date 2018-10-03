@@ -1,5 +1,6 @@
 require "rototiller/task/collections/param_collection"
 require "rototiller/task/params/env_var"
+require "rototiller/task/params/env_var_sensitive"
 
 module Rototiller
   module Task

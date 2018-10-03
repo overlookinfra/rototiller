@@ -72,6 +72,32 @@ module Rototiller
         end
       end
 
+      # adds sensitive environment variables to be tracked
+      # @param [Hash] args hashes of information about the environment variable
+      # @option args [String] :name The environment variable
+      # @option args [String] :message A message describing the use of this variable
+      #
+      # for block {|a| ... }
+      # @yield [a] Optional block syntax allows you to specify information about the
+      #   environment variable, available methods match hash keys
+      # @api public
+      # @example task.add_env({:name => "SOMENV"})
+      def add_env_sensitive(*args, &block)
+        raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
+        # this is kinda annoying we have to do this for all params? (not DRY)
+        #   have to do it this way so EnvVar doesn't become a collection
+        #   but if this gets moved to a mixin, it might be more tolerable
+        if block_given?
+          @env_vars.push(EnvVarSensitive.new(&block))
+        else
+          # TODO: test this with array and non-array single hash
+          args.each do |arg| # we can accept an array of hashes, each of which defines a param
+            validate_hash_param_arg(arg)
+            @env_vars.push(EnvVarSensitive.new(arg))
+          end
+        end
+      end
+
       # adds command to be executed by task
       # @param [Hash] args hash of information about the command to be executed
       # @option arg [String] :name The command to be executed
@@ -175,7 +201,6 @@ module Rototiller
       def make_verbose(verbosity = true)
         @verbose = verbosity
       end
-
     end
   end
 end

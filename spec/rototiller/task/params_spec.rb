@@ -1,7 +1,9 @@
 require "spec_helper"
 
+# rubocop:disable Metrics/ModuleLength
 module Rototiller
   module Task
+    # rubocop:disable Metrics/BlockLength
     describe RototillerParam do
       it "default message returns empty string" do
         expect(described_class.new.message).to eq("")
@@ -121,12 +123,22 @@ module Rototiller
         end
       end
     end
+
     describe RototillerParamWithEnv do
       it_behaves_like "a RototillerParamWithEnv object" do
         let(:param)  { described_class.new(@args) }
       end
       it_behaves_like "a RototillerParamWithEnv object" do
         let(:param)  { described_class.new(&@block) }
+      end
+
+      # here we only have to ensure it works. all the actual env_var handling is tested above
+      #   all the messaging stuff is handled in env_var_sensitive
+      context "#add_env_sensitive" do
+        let(:env_name) { unique_env }
+        it "works" do
+          described_class.new.add_env_sensitive(name: env_name)
+        end
       end
     end
   end

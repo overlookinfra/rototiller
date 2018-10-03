@@ -62,6 +62,12 @@
       end
     end
 
+    desc "Use a sensitive environment variable. It should not be printed"
+    rototiller_task :sensitive_sekrits do |task|
+      # note the value of this will not get printed during rototiller output
+      ENV["MY_SECRET_KEY"] = "shhhhhhhhh"
+      task.add_command({:name => 'echo i use a secret', :add_env_sensitive => {:name => 'MY_SECRET_KEY'}})
+    end
 
     desc "add command-switch or option or argument with overriding environment variables." +
          "also give examples of how messaging works across the various portions of the API"

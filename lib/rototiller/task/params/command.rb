@@ -16,7 +16,7 @@ module Rototiller
     # @attr_reader [Struct] result A structured command result
     #    contains members: output, exit_code and pid
     # rubocop:disable Metrics/ClassLength
-    class Command < RototillerParam
+    class Command < RototillerParamWithEnv
       include Rototiller::ColorText
       # this command's name (as specified by user)
       # @return [String] the command to be used, could be considered a default
@@ -46,43 +46,8 @@ module Rototiller
         @arguments     = ArgumentCollection.new
 
         block_given? ? (yield self) : send_hash_keys_as_methods_to_self(args)
-
         # do this after we have done the rest of init, so @name can be re-set
-        set_command_name_from_our_env_vars
-      end
-
-      # adds environment variables to be tracked, messaged.
-      #   In the Command context this env_var overrides the command "name"
-      # @param [Hash] args hashes of information about the environment variable
-      # @option args [String] :name The environment variable
-      # @option args [String] :default The default value for the environment variable
-      #                                  this is optional and defaults to the parent's `:name`
-      # @option args [String] :message A message describing the use of this variable
-      # @api public
-      # @example command.add_env({:name => "MYENV"})
-      #
-      # for block {|a| ... }
-      # @yield [a] Optional block syntax allows you to specify information about the
-      #   environment variable, available methods match hash keys described above
-      # @return [Env] object
-      def add_env(*args, &block)
-        raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
-        # this is kinda annoying we have to do this for all params? (not DRY)
-        #   have to do it this way so EnvVar doesn't become a collection
-        #   but if this gets moved to a mixin, it might be more tolerable
-        if block_given?
-          # send in the name of this Param, so it can be used when no default is given to add_env
-          @env_vars.push(EnvVar.new({ parent_name: @name }, &block))
-        else
-          # TODO: test this with array and non-array single hash
-          args.each do |arg| # we can accept an array of hashes, each of which defines a param
-            validate_hash_param_arg(arg)
-            # send in the name of this Param, so it can be used when no default is given to add_env
-            @env_vars.push(EnvVar.new({ parent_name: @name }.merge(arg)))
-          end
-        end
-        #   do this every time a new env_var is created (thus here)
-        set_command_name_from_our_env_vars
+        set_param_name_from_our_env_vars
       end
 
       # adds switch(es) (binary option flags) to this Command instance with
@@ -226,14 +191,6 @@ module Rototiller
       end
 
       private
-
-      # @api private
-      # our name/value is the value of the last env_var set, if any
-      # FIXME: this should be abstracted into a parent class above RototillerParam
-      #   this is used only, but in both of command and switch.
-      def set_command_name_from_our_env_vars
-        @name = @env_vars.last if @env_vars.last
-      end
 
       # @api private
       def delete_nil_empty_false(arg)

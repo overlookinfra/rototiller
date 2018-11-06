@@ -34,6 +34,9 @@ module Rototiller
         # the env_vars that override the name
         @env_vars = EnvCollection.new
 
+        # is the name set from a sensitive/redacted env var?
+        @is_value_sensitive = false
+
         block_given? ? (yield self) : send_hash_keys_as_methods_to_self(args)
         # do this after we have done the rest of init, so @name can be re-set
         set_param_name_from_our_env_vars
@@ -101,7 +104,15 @@ module Rototiller
       # @api private
       # our name/value is the value of the last env_var set, if any
       def set_param_name_from_our_env_vars
-        @name = @env_vars.last if @env_vars.last
+        return unless @env_vars.last
+        # only set is_value_sensitive if the env var the value comes from is sensitive
+        #   we can't use last here because it ends up implying #.to_s
+        @is_value_sensitive = if @env_vars[-1].class == Rototiller::Task::EnvVarSensitive
+                                true
+                              else
+                                false
+                              end
+        @name = @env_vars.last
       end
     end
   end

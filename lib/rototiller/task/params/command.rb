@@ -130,19 +130,34 @@ module Rototiller
         end
       end
 
+      # convert a Command object to a string safely (redact sensitive env vars)
+      # @return [String] the current value of the command string as built from its params
+      #   if any params values are set from sensitive env vars, redact them
+      # @api public
+      # @example puts command.safe_print
+      # TODO make private method? so that it will throw an error if yielded to?
+      def safe_print
+        if @is_value_sensitive
+          my_value = "[REDACTED]"
+        elsif name
+          my_value = name
+        end
+        delete_nil_empty_false([(my_value if my_value),
+                                @switches.safe_print,
+                                @options.safe_print,
+                                @arguments.safe_print]).join(" ").to_s
+      end
+
       # convert a Command object to a string (runable command string)
       # @return [String] the current value of the command string as built from its params
       # @api public
       # @example puts command
       # TODO make private method? so that it will throw an error if yielded to?
-      # @return [String] string represenation of this entire command string
       def to_str
-        delete_nil_empty_false([
-                                 (name if name),
-                                 @switches.to_s,
-                                 @options.to_s,
-                                 @arguments.to_s
-                               ]).join(" ").to_s
+        delete_nil_empty_false([(name if name),
+                                @switches.to_s,
+                                @options.to_s,
+                                @arguments.to_s]).join(" ").to_s
       end
       alias to_s to_str
 

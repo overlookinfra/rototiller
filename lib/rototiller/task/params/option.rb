@@ -43,6 +43,16 @@ module Rototiller
         [@name.to_s, @arguments.to_s].compact.join(" ")
       end
 
+      # The safe string representation of this Option; the value sent by author, or
+      #   overridden by any env_vars. [REDACTED] if overridden by sensitive env_vars
+      # @return [String] the Switch's value
+      # @api public
+      # @example puts option.safe_print
+      def safe_print
+        return ["[REDACTED]", @arguments.to_s].compact.join(" ") if @is_value_sensitive
+        [@name.to_s, @arguments.to_s].compact.join(" ")
+      end
+
       # @return [String] formatted messages from all of Switch's pieces
       #   itself, env_vars
       # @api public

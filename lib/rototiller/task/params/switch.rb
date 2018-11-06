@@ -33,19 +33,29 @@ module Rototiller
         true unless @name
       end
 
-      # @return [String] formatted messages from all of Switch's pieces
+      # @return [String] formatted messages from all of Switch/Argument's pieces
       #   itself, env_vars
       def message(indent = 0)
         [@env_vars.messages(indent)].join ""
       end
 
-      # The string representation of this Switch; the value sent by author, or
+      # The string representation of this Switch/Argument; the value sent by author, or
       #   overridden by any env_vars
       # @return [String] the Switch's value
       def to_str
         @name.to_s
       end
       alias to_s to_str
+
+      # The safe string representation of this Switch/Argument; the value sent by author, or
+      #   overridden by any env_vars. [REDACTED] if overridden by sensitive env_vars
+      # @return [String] the Switch's value
+      # @api public
+      # @example puts switch.safe_print
+      def safe_print
+        return "[REDACTED]" if @is_value_sensitive
+        @name.to_s
+      end
     end
   end
 end

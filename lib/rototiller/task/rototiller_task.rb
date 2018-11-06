@@ -147,7 +147,7 @@ module Rototiller
       def run_commands
         @commands.each do |command|
           # print command and messages at top
-          puts green_text("running: ") + command
+          puts green_text("running: ") + command.safe_print
           puts command.message
 
           run_command(command)

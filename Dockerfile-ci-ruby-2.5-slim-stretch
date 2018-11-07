@@ -1,0 +1,49 @@
+FROM ruby:2.5-slim-stretch as Builder
+MAINTAINER Eric Thompson <erict@puppet.com>
+
+ENV project rototiller
+
+RUN apt-get update && apt-get install -y --no-install-recommends make gcc libc-dev
+
+# setup project
+COPY . ${project}
+WORKDIR ${project}
+# remove intermediate gem build stuff
+RUN /bin/sh -l -c "bundle install --with system_tests" \
+    && rm -rf /usr/local/bundle/cache/*.gem \
+    && find /usr/local/bundle/gems/ -name "*.c" -delete \
+    && find /usr/local/bundle/gems/ -name "*.o" -delete
+
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# we have to use a beaker supported base, here. no alpine :-(
+# stretch is debian 9.5
+FROM ruby:2.5-slim-stretch
+
+ENV project=rototiller
+
+# setup ssh
+# beaker needs PermitUserEnvironment
+RUN apt-get update && apt-get install -y --no-install-recommends openssh-server \
+    && mkdir /run/sshd # workaround a bug in openssh-server package \
+    && ssh-keygen -A \
+    && mkdir -p /root/.ssh \
+    && chmod 0700 /root/.ssh \
+    && echo 'PermitRootLogin yes'       >> /etc/ssh/sshd_config \
+    && echo 'PermitUserEnvironment yes' >> /etc/ssh/sshd_config
+COPY acceptance/lib/ssh/docker_acceptance* /root/.ssh/
+RUN chmod 600 /root/.ssh/docker_acceptance* \
+    && echo `cat /root/.ssh/docker_acceptance.pub` >> ~/.ssh/authorized_keys
+
+# setup project
+COPY . ${project}
+WORKDIR ${project}
+
+# copy the ruby bundle from the builder to the final image
+COPY --from=Builder ${BUNDLE_PATH} ${BUNDLE_PATH}
+
+# sigh, create neverending pid1
+# this way the container won't exit once we start it
+# we can later exec commands against it after copying files into it
+#  background processes do not acheive this (such as ssshd)
+ENTRYPOINT tail -f /dev/null

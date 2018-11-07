@@ -2,7 +2,7 @@ require "fileutils"
 require "rototiller"
 require "./gem_of/lib/gem_of/rake_tasks"
 
-PCR_URI = "pcr-internal.puppet.net/slv/rototiller:latest".freeze
+PCR_URI = "pcr-internal.puppet.net/slv/rototiller-ci-ruby-2.5-slim-stretch".freeze
 LATEST_CONTAINER = "docker ps --latest --quiet".freeze
 DEFAULT_RAKE_VER = "11.0".freeze
 
@@ -70,9 +70,7 @@ namespace :test do
       command.name = "docker exec --interactive `#{LATEST_CONTAINER}`"
       # use options here so they come out in order (arguments would go on the end after all options
       command.add_option(name: '/bin/bash -l -c "')
-      # start sshd for beaker
-      #   we have to specify group to bundle update or it fails, sometimes??
-      command.add_option(name: "/usr/sbin/sshd && bundle update &&")
+      command.add_option(name: "/usr/sbin/sshd -e && bundle update &&")
       command.add_option(name: "bundle exec beaker --debug --no-ntp --repo-proxy " \
                                "--no-validate --no-provision")
       command.add_option do |option|
@@ -103,7 +101,7 @@ namespace :test do
         option.name = "--hosts"
         option.message = "The hosts file that Beaker will use"
         option.add_argument do |arg|
-          arg.name = "acceptance/hosts.cfg"
+          arg.name = "acceptance/hosts-debian95.cfg"
           arg.add_env(name: "BEAKER_HOSTS")
         end
       end
@@ -128,14 +126,10 @@ namespace :container do
   rototiller_task :build do |t|
     t.add_command do |command|
       # command.name = "docker build ./ --file Dockerfile-tests --tag"
-      # WARNING: this will delete any Gemfile.lock in the CWD
-      # we need to delete the local bundle stuff so that when the container build slurps them up the
-      #   Gemfile.lock doesn't corrupt the container bundle
-      command.name = "rm -rf Gemfile.lock && docker build ./ --file Dockerfile-tests --tag"
+      command.name = "docker build ./ --file docker/Dockerfile-tests --tag"
       command.add_argument do |arg|
         arg.name = PCR_URI
-        arg.message = "the name of the docker image, including registry/repo"
-        arg.add_env(name: "DOCKER_IMAGE")
+        arg.add_env(name: "DOCKER_IMAGE", message: "the name of the docker image, including registry/repo")
       end
     end
   end

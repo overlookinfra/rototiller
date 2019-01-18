@@ -66,8 +66,9 @@
     docker login pcr-internal.puppet.net
     docker pull pcr-internal.puppet.net/slv/rototiller:latest
     ```
+    These are probably internal to puppet and we should move them to dockerhub. email us qa@puppet.com to get the images.
 
-  * We'll  mirror the image to docker soon, probably, for your local testing, outside of Puppet.
+  * We'll  mirror the image to docker soon, for your local testing, outside of Puppet.
   * `bundle exec rake test:acceptance`
 
   These tests all run in CI. The unit tests are also run in the container to save time in the repeated bundle installs and rvm setup steps. You are welcome to use the container as well if you want to avoid the bundle install. Just `gem install rototiller` to make our own Rakefile _go_ and you can `rake test:unit` all day.

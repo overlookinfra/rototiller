@@ -131,7 +131,7 @@ namespace :container do
       # WARNING: this will delete any Gemfile.lock in the CWD
       # we need to delete the local bundle stuff so that when the container build slurps them up the
       #   Gemfile.lock doesn't corrupt the container bundle
-      command.name = "rm -rf Gemfile.lock && docker build ./ --file Dockerfile-tests --tag"
+      command.name = "rm -f Gemfile.lock && docker build ./ --file Dockerfile-tests --tag"
       command.add_argument do |arg|
         arg.name = PCR_URI
         arg.message = "the name of the docker image, including registry/repo"
@@ -142,6 +142,9 @@ namespace :container do
 
   desc "update container's working copy; start; prep for tests."
   rototiller_task :update_and_start do |t|
+    # bundler 2.x causes these problems again.
+    #   make sure we don't copy our local lockfile into the container
+    t.add_command(name: "rm -f Gemfile.lock")
     # create the container from an image in the docker daemon
     t.add_command(name: "echo creating new container")
     t.add_command(name: "docker create #{PCR_URI}")

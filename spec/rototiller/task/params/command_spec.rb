@@ -18,6 +18,8 @@ module Rototiller
         lines = ENV["LINES"]
         rows = ENV["ROWS"]
         columns = ENV["COLUMNS"]
+        fail_pry = ENV["FAIL_PRY"]
+        inputrc = ENV["INPUTRC"]
         allow(ENV).to receive(:[]).with("PRYRC").and_return(pryrc)
         allow(ENV).to receive(:[]).with("DISABLE_PRY").and_return(disable_pry)
         allow(ENV).to receive(:[]).with("HOME").and_return(home)
@@ -27,6 +29,8 @@ module Rototiller
         allow(ENV).to receive(:[]).with("LINES").and_return(lines)
         allow(ENV).to receive(:[]).with("ROWS").and_return(rows)
         allow(ENV).to receive(:[]).with("COLUMNS").and_return(columns)
+        allow(ENV).to receive(:[]).with("FAIL_PRY").and_return(fail_pry)
+        allow(ENV).to receive(:[]).with("INPUTRC").and_return(inputrc)
 
         @arg_name      = "VARNAME_#{(0...8).map { (65 + rand(26)).chr }.join}"
         @command_name  = "echo"

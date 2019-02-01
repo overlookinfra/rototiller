@@ -24,6 +24,10 @@ module Rototiller
         pager = ENV["PAGER"]
         lines = ENV["LINES"]
         bundle_major_deprecations = ENV["BUNDLE_MAJOR_DEPRECATIONS"]
+        fail_pry = ENV["FAIL_PRY"]
+        inputrc = ENV["INPUTRC"]
+        rows = ENV["ROWS"]
+        columns = ENV["COLUMNS"]
         allow(ENV).to receive(:[]).with("PRYRC").and_return(pryrc)
         allow(ENV).to receive(:[]).with("DISABLE_PRY").and_return(disable_pry)
         allow(ENV).to receive(:[]).with("HOME").and_return(home)
@@ -33,6 +37,10 @@ module Rototiller
         allow(ENV).to receive(:[]).with("LINES").and_return(lines)
         allow(ENV).to receive(:[]).with("BUNDLE_MAJOR_DEPRECATIONS")
                                   .and_return(bundle_major_deprecations)
+        allow(ENV).to receive(:[]).with("FAIL_PRY").and_return(fail_pry)
+        allow(ENV).to receive(:[]).with("INPUTRC").and_return(inputrc)
+        allow(ENV).to receive(:[]).with("ROWS").and_return(rows)
+        allow(ENV).to receive(:[]).with("COLUMNS").and_return(columns)
 
         @param_name = random_string
         @args = { name: @param_name }

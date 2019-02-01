@@ -50,7 +50,7 @@ module Rototiller
         end
       end
 
-      describe "#to_str" do
+      describe "#to_str, #to_s" do
         it "returns the name" do
           expect(option.to_str).to eq("#{@option_name} #{@argument_name}")
         end
@@ -62,6 +62,26 @@ module Rototiller
           expect(option.to_str).to eq("my_shiny_new_option #{@argument_name}")
         end
       end
+
+      describe "#safe_print" do
+        it "is the same as to_s when values are not sensitive" do
+          expect(option.safe_print).to eq(option.to_str)
+        end
+        # the rest of these perms are covered above, no need to repeat here
+        it "is the same as to_s when overridden values are not senstive" do
+          # set env first, or option might not have it in time
+          allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_option")
+          option.add_env(name: "BLAH")
+          expect(option.safe_print).to eq(option.to_str)
+        end
+        it "redacts the name when senstive" do
+          # set env first, or command might not have it in time
+          allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_option")
+          option.add_env_sensitive(name: "BLAH")
+          expect(option.safe_print).to eq("[REDACTED] #{@argument_name}")
+        end
+      end
+
       it "fails when trying to set a message on an Option" do
         expect { option.message = "blah" }.to raise_error(NoMethodError)
       end

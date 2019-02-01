@@ -55,6 +55,26 @@ module Rototiller
           expect(switch.to_s).to eq("my_shiny_new_switch")
         end
       end
+
+      describe "#safe_print" do
+        it "is the same as to_s when values are not sensitive" do
+          expect(switch.safe_print).to eq(switch.to_s)
+        end
+        # the rest of these perms are covered above, no need to repeat here
+        it "is the same as to_s when overridden values are not senstive" do
+          # set env first, or switch might not have it in time
+          allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_switch")
+          switch.add_env(name: "BLAH")
+          expect(switch.safe_print).to eq(switch.to_s)
+        end
+        it "redacts the name when senstive" do
+          # set env first, or command might not have it in time
+          allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_switch")
+          switch.add_env_sensitive(name: "BLAH")
+          expect(switch.safe_print).to eq("[REDACTED]")
+        end
+      end
+
       it "fails when trying to set a message on a Switch" do
         expect { switch.message = "blah" }.to raise_error(NoMethodError)
       end

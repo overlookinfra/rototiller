@@ -128,6 +128,20 @@ module Rototiller
             param.add_env { |e| e.name = "ENV2" }
             expect(param.name).to eq("rite")
           end
+          it "is_value_sensitive is not set when last env is not sensitive" do
+            allow(ENV).to receive(:[]).with("ENV1").and_return("rong")
+            allow(ENV).to receive(:[]).with("ENV2").and_return("rite")
+            param.add_env_sensitive { |e| e.name = "ENV1" }
+            param.add_env { |e| e.name = "ENV2" }
+            expect(param.instance_variable_get(:@is_value_sensitive)).to eq(false)
+          end
+          it "is_value_sensitive is set when last env is sensitive" do
+            allow(ENV).to receive(:[]).with("ENV1").and_return("rong")
+            allow(ENV).to receive(:[]).with("ENV2").and_return("rite")
+            param.add_env { |e| e.name = "ENV1" }
+            param.add_env_sensitive { |e| e.name = "ENV2" }
+            expect(param.instance_variable_get(:@is_value_sensitive)).to eq(true)
+          end
         end
       end
     end

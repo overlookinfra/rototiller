@@ -86,7 +86,7 @@ module Rototiller
         end
       end
 
-      describe "#to_str" do
+      describe "#to_str, #to_s" do
         it "returns the name" do
           expect(command.to_s).to eq("#{@command_name} #{@arg_name}")
         end
@@ -96,6 +96,25 @@ module Rototiller
           allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_command")
           command.add_env(name: "BLAH")
           expect(command.to_s).to eq("my_shiny_new_command #{@arg_name}")
+        end
+      end
+
+      describe "#safe_print" do
+        it "is the same as to_s when values are not sensitive" do
+          expect(command.safe_print).to eq(command.to_s)
+        end
+        # the rest of these perms are covered above, no need to repeat here
+        it "is the same as to_s when overridden values are not senstive" do
+          # set env first, or command might not have it in time
+          allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_command")
+          command.add_env(name: "BLAH")
+          expect(command.safe_print).to eq(command.to_s)
+        end
+        it "redacts the command name when senstive" do
+          # set env first, or command might not have it in time
+          allow(ENV).to receive(:[]).with("BLAH9").and_return("my_shiny_new_command")
+          command.add_env_sensitive(name: "BLAH9")
+          expect(command.safe_print).to eq("[REDACTED] #{@arg_name}")
         end
       end
 

@@ -259,6 +259,16 @@ something --myoption optionarg --myargument
             .to_stdout
         end
       end
+      context "#add_env_sensitive" do
+        let(:env_name) { unique_env }
+        it "works" do
+          task.add_env_sensitive(name: env_name)
+          expect(task).to receive(:exit)
+          expect { described_run_task }
+            .to output(/\[E\] required: .*#{env_name}/m)
+            .to_stdout
+        end
+      end
     end
   end
 end

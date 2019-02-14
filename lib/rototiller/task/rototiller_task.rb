@@ -1,5 +1,6 @@
 require "rototiller/task/collections/env_collection"
 require "rototiller/task/collections/command_collection"
+require "rototiller/task/hash_handling"
 require "rototiller/utilities/color_text"
 require "rake/tasklib"
 
@@ -11,6 +12,7 @@ module Rototiller
     # @attr [Boolean] fail_on_error Whether or not to fail Rake when an error
     #   occurs (typically when examples fail). Defaults to `true`.
     class RototillerTask < ::Rake::TaskLib
+      include HashHandling
       include Rototiller::ColorText
       attr_reader :name
       # FIXME: make fail_on_error per-command
@@ -70,6 +72,32 @@ module Rototiller
         end
       end
 
+      # adds sensitive environment variables to be tracked
+      # @param [Hash] args hashes of information about the environment variable
+      # @option args [String] :name The environment variable
+      # @option args [String] :message A message describing the use of this variable
+      #
+      # for block {|a| ... }
+      # @yield [a] Optional block syntax allows you to specify information about the
+      #   environment variable, available methods match hash keys
+      # @api public
+      # @example task.add_env({:name => "SOMENV"})
+      def add_env_sensitive(*args, &block)
+        raise ArgumentError, "#{__method__} takes a block or a hash" if !args.empty? && block_given?
+        # this is kinda annoying we have to do this for all params? (not DRY)
+        #   have to do it this way so EnvVar doesn't become a collection
+        #   but if this gets moved to a mixin, it might be more tolerable
+        if block_given?
+          @env_vars.push(EnvVarSensitive.new(&block))
+        else
+          # TODO: test this with array and non-array single hash
+          args.each do |arg| # we can accept an array of hashes, each of which defines a param
+            validate_hash_param_arg(arg)
+            @env_vars.push(EnvVarSensitive.new(arg))
+          end
+        end
+      end
+
       # adds command to be executed by task
       # @param [Hash] args hash of information about the command to be executed
       # @option arg [String] :name The command to be executed
@@ -119,7 +147,7 @@ module Rototiller
       def run_commands
         @commands.each do |command|
           # print command and messages at top
-          puts green_text("running: ") + command
+          puts green_text("running: ") + command.safe_print
           puts command.message
 
           run_command(command)
@@ -172,14 +200,6 @@ module Rototiller
       # @api private
       def make_verbose(verbosity = true)
         @verbose = verbosity
-      end
-
-      ARG_ERROR_SUBSTR = "takes an Array of Hashes. Received Array of:".freeze
-      # @api private
-      def validate_hash_param_arg(arg)
-        calling_method_name = caller_locations(1, 1)[0].label
-        error_string = "#{calling_method_name} #{ARG_ERROR_SUBSTR} '#{arg.class}'"
-        raise ArgumentError, error_string unless arg.is_a?(Hash)
       end
     end
   end

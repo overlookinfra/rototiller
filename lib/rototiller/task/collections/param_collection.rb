@@ -56,7 +56,8 @@ module Rototiller
       def to_str
         @collection.join(" ") unless @collection.empty?
       end
-      alias to_s to_str
+      alias to_s       to_str
+      alias safe_print to_str # plumb safe_print through. no changes needed
 
       private
 

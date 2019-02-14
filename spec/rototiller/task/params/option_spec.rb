@@ -1,7 +1,6 @@
 require "spec_helper"
 
 module Rototiller
-  # rubocop:disable Metrics/ModuleLength
   module Task
     # use each of these for the objects passed from it_behaves_like below
     #   (each of option from hash and from block)
@@ -16,6 +15,10 @@ module Rototiller
         term = ENV["TERM"]
         pager = ENV["PAGER"]
         lines = ENV["LINES"]
+        rows = ENV["ROWS"]
+        columns = ENV["COLUMNS"]
+        fail_pry = ENV["FAIL_PRY"]
+        inputrc = ENV["INPUTRC"]
         allow(ENV).to receive(:[]).with("PRYRC").and_return(pryrc)
         allow(ENV).to receive(:[]).with("DISABLE_PRY").and_return(disable_pry)
         allow(ENV).to receive(:[]).with("HOME").and_return(home)
@@ -23,6 +26,10 @@ module Rototiller
         allow(ENV).to receive(:[]).with("TERM").and_return(term)
         allow(ENV).to receive(:[]).with("PAGER").and_return(pager)
         allow(ENV).to receive(:[]).with("LINES").and_return(lines)
+        allow(ENV).to receive(:[]).with("ROWS").and_return(rows)
+        allow(ENV).to receive(:[]).with("COLUMNS").and_return(columns)
+        allow(ENV).to receive(:[]).with("FAIL_PRY").and_return(fail_pry)
+        allow(ENV).to receive(:[]).with("INPUTRC").and_return(inputrc)
 
         @option_name = random_string
         @argument_name = random_string
@@ -43,89 +50,7 @@ module Rototiller
         end
       end
 
-      describe "#add_env" do
-        it "can not directly set env_vars" do
-          expect { option.env_vars << "wah" }.to raise_error(NoMethodError)
-        end
-        describe "as hash" do
-          it "does not override option name with empty env_var" do
-            # set env first, or option might not have it in time
-            allow(ENV).to receive(:[]).with("BLAH").and_return(nil)
-            option.add_env(name: "BLAH")
-            expect(option.name).to eq(@option_name.to_s)
-          end
-          it "can override option name with env_var" do
-            # set env first, or option might not have it in time
-            allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_option")
-            option.add_env(name: "BLAH")
-            expect(option.name).to eq("my_shiny_new_option")
-          end
-          it "can override option name with multiple env_var" do
-            # set env first, or option might not have it in time
-            allow(ENV).to receive(:[]).with("ENV1").and_return("wrong")
-            allow(ENV).to receive(:[]).with("ENV2").and_return("right")
-            option.add_env(name: "ENV1")
-            option.add_env(name: "ENV2")
-            expect(option.name).to eq("right")
-          end
-          it "can override option name with multiple env_var and one not set" do
-            allow(ENV).to receive(:[]).with("ENV1").and_return("rite")
-            allow(ENV).to receive(:[]).with("ENV2").and_return(nil)
-            option.add_env(name: "ENV1")
-            option.add_env(name: "ENV2")
-            expect(option.name).to eq("rite")
-          end
-          it "can override option name with multiple env_var and first not set" do
-            allow(ENV).to receive(:[]).with("ENV1").and_return(nil)
-            allow(ENV).to receive(:[]).with("ENV2").and_return("rite")
-            option.add_env(name: "ENV1")
-            option.add_env(name: "ENV2")
-            expect(option.name).to eq("rite")
-          end
-          it "raises an error when supplied a bad key" do
-            bad_key = :foo
-            expect { option.add_env(bad_key => "bar") }.to raise_error(ArgumentError)
-          end
-        end
-        describe "as block" do
-          it "does not override option name with empty env_var" do
-            # set env first, or option might not have it in time
-            allow(ENV).to receive(:[]).with("BLAH").and_return(nil)
-            option.add_env { |e| e.name = "BLAH" }
-            expect(option.name).to eq(@option_name)
-          end
-          it "can override option name with env_var" do
-            # set env first, or option might not have it in time
-            allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_option")
-            option.add_env { |e| e.name = "BLAH" }
-            expect(option.name).to eq("my_shiny_new_option")
-          end
-          it "can override option name with multiple env_var" do
-            # set env first, or option might not have it in time
-            allow(ENV).to receive(:[]).with("ENV1").and_return("wrong")
-            allow(ENV).to receive(:[]).with("ENV2").and_return("right")
-            option.add_env { |e| e.name = "ENV1" }
-            option.add_env { |e| e.name = "ENV2" }
-            expect(option.name).to eq("right")
-          end
-          it "can override option name with multiple env_var and one not set" do
-            allow(ENV).to receive(:[]).with("ENV1").and_return("rite")
-            allow(ENV).to receive(:[]).with("ENV2").and_return(nil)
-            option.add_env { |e| e.name = "ENV1" }
-            option.add_env { |e| e.name = "ENV2" }
-            expect(option.name).to eq("rite")
-          end
-          it "can override option name with multiple env_var and first not set" do
-            allow(ENV).to receive(:[]).with("ENV1").and_return(nil)
-            allow(ENV).to receive(:[]).with("ENV2").and_return("rite")
-            option.add_env { |e| e.name = "ENV1" }
-            option.add_env { |e| e.name = "ENV2" }
-            expect(option.name).to eq("rite")
-          end
-        end
-      end
-
-      describe "#to_str" do
+      describe "#to_str, #to_s" do
         it "returns the name" do
           expect(option.to_str).to eq("#{@option_name} #{@argument_name}")
         end
@@ -137,6 +62,26 @@ module Rototiller
           expect(option.to_str).to eq("my_shiny_new_option #{@argument_name}")
         end
       end
+
+      describe "#safe_print" do
+        it "is the same as to_s when values are not sensitive" do
+          expect(option.safe_print).to eq(option.to_str)
+        end
+        # the rest of these perms are covered above, no need to repeat here
+        it "is the same as to_s when overridden values are not senstive" do
+          # set env first, or option might not have it in time
+          allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_option")
+          option.add_env(name: "BLAH")
+          expect(option.safe_print).to eq(option.to_str)
+        end
+        it "redacts the name when senstive" do
+          # set env first, or command might not have it in time
+          allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_option")
+          option.add_env_sensitive(name: "BLAH")
+          expect(option.safe_print).to eq("[REDACTED] #{@argument_name}")
+        end
+      end
+
       it "fails when trying to set a message on an Option" do
         expect { option.message = "blah" }.to raise_error(NoMethodError)
       end

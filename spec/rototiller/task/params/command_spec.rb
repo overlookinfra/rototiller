@@ -18,6 +18,8 @@ module Rototiller
         lines = ENV["LINES"]
         rows = ENV["ROWS"]
         columns = ENV["COLUMNS"]
+        fail_pry = ENV["FAIL_PRY"]
+        inputrc = ENV["INPUTRC"]
         allow(ENV).to receive(:[]).with("PRYRC").and_return(pryrc)
         allow(ENV).to receive(:[]).with("DISABLE_PRY").and_return(disable_pry)
         allow(ENV).to receive(:[]).with("HOME").and_return(home)
@@ -27,6 +29,8 @@ module Rototiller
         allow(ENV).to receive(:[]).with("LINES").and_return(lines)
         allow(ENV).to receive(:[]).with("ROWS").and_return(rows)
         allow(ENV).to receive(:[]).with("COLUMNS").and_return(columns)
+        allow(ENV).to receive(:[]).with("FAIL_PRY").and_return(fail_pry)
+        allow(ENV).to receive(:[]).with("INPUTRC").and_return(inputrc)
 
         @arg_name      = "VARNAME_#{(0...8).map { (65 + rand(26)).chr }.join}"
         @command_name  = "echo"
@@ -82,89 +86,7 @@ module Rototiller
         end
       end
 
-      describe "#add_env" do
-        it "can not directly set env_vars" do
-          expect { command.env_vars << "wah" }.to raise_error(NoMethodError)
-        end
-        describe "as hash" do
-          it "does not override command name with empty env_var" do
-            # set env first, or command might not have it in time
-            allow(ENV).to receive(:[]).with("BLAH").and_return(nil)
-            command.add_env(name: "BLAH")
-            expect(command.name).to eq(@command_name)
-          end
-          it "can override command name with env_var" do
-            # set env first, or command might not have it in time
-            allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_command")
-            command.add_env(name: "BLAH")
-            expect(command.name).to eq("my_shiny_new_command")
-          end
-          it "can override command name with multiple env_var" do
-            # set env first, or command might not have it in time
-            allow(ENV).to receive(:[]).with("ENV1").and_return("wrong")
-            allow(ENV).to receive(:[]).with("ENV2").and_return("right")
-            command.add_env(name: "ENV1")
-            command.add_env(name: "ENV2")
-            expect(command.name).to eq("right")
-          end
-          it "can override command name with multiple env_var and one not set" do
-            allow(ENV).to receive(:[]).with("ENV1").and_return("rite")
-            allow(ENV).to receive(:[]).with("ENV2").and_return(nil)
-            command.add_env(name: "ENV1")
-            command.add_env(name: "ENV2")
-            expect(command.name).to eq("rite")
-          end
-          it "can override command name with multiple env_var and first not set" do
-            allow(ENV).to receive(:[]).with("ENV1").and_return(nil)
-            allow(ENV).to receive(:[]).with("ENV2").and_return("rite")
-            command.add_env(name: "ENV1")
-            command.add_env(name: "ENV2")
-            expect(command.name).to eq("rite")
-          end
-          it "raises an error when supplied a bad key" do
-            bad_key = :foo
-            expect { command.add_env(bad_key => "bar") }.to raise_error(ArgumentError)
-          end
-        end
-        describe "as block" do
-          it "does not override command name with empty env_var" do
-            # set env first, or command might not have it in time
-            allow(ENV).to receive(:[]).with("BLAH").and_return(nil)
-            command.add_env { |e| e.name = "BLAH" }
-            expect(command.name).to eq(@command_name)
-          end
-          it "can override command name with env_var" do
-            # set env first, or command might not have it in time
-            allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_command")
-            command.add_env { |e| e.name = "BLAH" }
-            expect(command.name).to eq("my_shiny_new_command")
-          end
-          it "can override command name with multiple env_var" do
-            # set env first, or command might not have it in time
-            allow(ENV).to receive(:[]).with("ENV1").and_return("wrong")
-            allow(ENV).to receive(:[]).with("ENV2").and_return("right")
-            command.add_env { |e| e.name = "ENV1" }
-            command.add_env { |e| e.name = "ENV2" }
-            expect(command.name).to eq("right")
-          end
-          it "can override command name with multiple env_var and one not set" do
-            allow(ENV).to receive(:[]).with("ENV1").and_return("rite")
-            allow(ENV).to receive(:[]).with("ENV2").and_return(nil)
-            command.add_env { |e| e.name = "ENV1" }
-            command.add_env { |e| e.name = "ENV2" }
-            expect(command.name).to eq("rite")
-          end
-          it "can override command name with multiple env_var and first not set" do
-            allow(ENV).to receive(:[]).with("ENV1").and_return(nil)
-            allow(ENV).to receive(:[]).with("ENV2").and_return("rite")
-            command.add_env { |e| e.name = "ENV1" }
-            command.add_env { |e| e.name = "ENV2" }
-            expect(command.name).to eq("rite")
-          end
-        end
-      end
-
-      describe "#to_str" do
+      describe "#to_str, #to_s" do
         it "returns the name" do
           expect(command.to_s).to eq("#{@command_name} #{@arg_name}")
         end
@@ -174,6 +96,25 @@ module Rototiller
           allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_command")
           command.add_env(name: "BLAH")
           expect(command.to_s).to eq("my_shiny_new_command #{@arg_name}")
+        end
+      end
+
+      describe "#safe_print" do
+        it "is the same as to_s when values are not sensitive" do
+          expect(command.safe_print).to eq(command.to_s)
+        end
+        # the rest of these perms are covered above, no need to repeat here
+        it "is the same as to_s when overridden values are not senstive" do
+          # set env first, or command might not have it in time
+          allow(ENV).to receive(:[]).with("BLAH").and_return("my_shiny_new_command")
+          command.add_env(name: "BLAH")
+          expect(command.safe_print).to eq(command.to_s)
+        end
+        it "redacts the command name when senstive" do
+          # set env first, or command might not have it in time
+          allow(ENV).to receive(:[]).with("BLAH9").and_return("my_shiny_new_command")
+          command.add_env_sensitive(name: "BLAH9")
+          expect(command.safe_print).to eq("[REDACTED] #{@arg_name}")
         end
       end
 

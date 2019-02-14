@@ -17,6 +17,14 @@ module Rototiller
         end
       end
 
+      ARG_ERROR_SUBSTR = "takes an Array of Hashes. Received Array of:".freeze
+      # @api private
+      def validate_hash_param_arg(arg)
+        calling_method_name = caller_locations(1, 1)[0].label
+        error_string = "#{calling_method_name} #{ARG_ERROR_SUBSTR} '#{arg.class}'"
+        raise ArgumentError, error_string unless arg.is_a?(Hash)
+      end
+
       private
 
       # @api private

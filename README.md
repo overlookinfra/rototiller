@@ -80,7 +80,7 @@ Rototiller is documented using yard
 * [Rototiller's Yard Docs](http://www.rubydoc.info/github/puppetlabs/rototiller) (API/internal Architecture docs)
 
 ## Contributing
-* [Contributing](CONTRIBUTING.md)
+* [Contributing](CONTRIBUTING.md)  do not merge, blah, trying review functions in github
 
 ## Issues
 

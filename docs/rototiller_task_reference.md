@@ -1,19 +1,19 @@
 # Rototiller Task Reference
 * herein lies the reference to the rototiller_task API
 
-* [rototiller_task](rototiller_task)
-  * [#add_env](rototiller_task-add_env)
-  * [#add_command](rototiller_task-add_command)
-  * [Command](Command)
-    * [#add\_env](Command-add_env)
-    * [#add\_switch](Command-add_switch)
-      * [#add\_env](Command-add_switch-add_env)
-    * [#add\_option](Command-add_option)
-      * [#add\_env](Command-add_option-add_env)
-      * [#add\_argument](Command-add_option-add_argument)
-        * [#add\_env](Command-add_option-add_argument-add_env)
-    * [#add\_argument](Command-add_argument)
-      * [#add\_env](Command-add_argument-add_env)
+* [rototiller_task](#rototiller_task)
+  * [#add_env](#rototiller_task-add_env)
+  * [#add_command](#rototiller_task-add_command)
+  * [Command](#Command)
+    * [#add\_env](#Command-add_env)
+    * [#add\_switch](#Command-add_switch)
+      * [#add\_env](#Command-add_switch-add_env)
+    * [#add\_option](#Command-add_option)
+      * [#add\_env](#Command-add_option-add_env)
+      * [#add\_argument](#Command-add_option-add_argument)
+        * [#add\_env](#Command-add_option-add_argument-add_env)
+    * [#add\_argument](#Command-add_argument)
+      * [#add\_env](#Command-add_argument-add_env)
 
 <a name="rototiller_task"></a>
 ## rototiller_task
